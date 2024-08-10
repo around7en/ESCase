@@ -1,0 +1,39 @@
+*design* DebussyLib (btIdent Verdi_N-2017.12-SP2)
+Command arguments:  -lib  simv.daidir/work  -saveLevel  -elab  simv.daidir/kdb  -simflow  -simdir  simv.daidir/kdb_libs  -top  decode_stream  -Lf  work  +disable_message+C00380+C00381  +disable_message+C00388+C00389  -SNPS_ELABCOM  -saveElab 
+
+*Error* view read_nalu is not defined for instance read_nalu_inst
+"decode_stream.sv", 153: 
+
+*Error* view rbsp_buffer is not defined for instance rbsp_buffer_inst
+"decode_stream.sv", 179: 
+
+*Error* view rbsp_buffer_simple is not defined for instance rbsp_buffer_slice_data
+"decode_stream.sv", 210: 
+
+*Error* view vps is not defined for instance vps_inst
+"decode_stream.sv", 234: 
+
+*Error* view ram is not defined for instance bram_rps
+"decode_stream.sv", 263: 
+
+*Error* view rps is not defined for instance rps_inst
+"decode_stream.sv", 292: 
+
+*Error* view sps is not defined for instance sps_inst
+"decode_stream.sv", 330: 
+
+*Error* view pps is not defined for instance pps_inst
+"decode_stream.sv", 393: 
+
+*Error* view slice_header is not defined for instance slice_header_inst
+"decode_stream.sv", 446: 
+
+*Error* view slice_data is not defined for instance slice_data_inst
+"decode_stream.sv", 524: 
+
+*Error* view bitstream_controller is not defined for instance bc_inst
+"decode_stream.sv", 626: 
+
+*Error* view bitstream_ena_gen is not defined for instance bitstream_ena_gen
+"decode_stream.sv", 675: 
+Total	12 error(s),   0 warning(s)

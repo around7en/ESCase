@@ -1,0 +1,173 @@
+
+# To Enable biasing and state propagation feature for all Synopsys Tools.
+set_design_attributes -elements {.} \
+                      -attribute enable_bias true 
+
+set_design_attributes -elements {.} \
+                      -attribute lower_domain_boundary true
+
+upf_version 2.1
+
+# To Load upf for their instance.
+#
+
+# Section 1: Power Domain Declaration 
+####################################################################
+
+## Create Supply Sets.
+create_supply_port VDD -direction in
+create_supply_net VDD
+connect_supply_net VDD -ports VDD
+
+
+create_supply_port VSS -direction in
+create_supply_net VSS  -resolve parallel
+connect_supply_net VSS -ports VSS
+create_supply_net VVDD  -resolve parallel
+
+
+create_supply_set PD_AO_SS \
+               -function               { power VDD } \
+               -function               { nwell VDD } \
+               -function               { pwell VSS } \
+               -function               { ground VSS }
+create_supply_set PD_SD_SS \
+               -function               { power VVDD } \
+               -function               { nwell VDD } \
+               -function               { pwell VSS } \
+               -function               { ground VSS }
+
+
+## Create Power Domain with the primary supply set.
+create_power_domain PD_SD \
+               -supply                 { primary PD_SD_SS } \
+               -elements               " \
+                                       . \
+                                       "
+create_power_domain PD_AO \
+               -supply                 { primary PD_AO_SS } \
+               -elements               " \
+                                       dec_bin_sig_inst \
+                                       "
+
+
+set_port_attributes \
+                -ports         " \
+                               nPwrUp1 \
+                               nPwrUp2 \
+                               nISOLATE \
+                               " \
+                -driver_supply   PD_AO_SS
+
+#Section 2: Power Switch Declaration 
+####################################################################
+
+# Line:19 Power Switch for SD_1 Power Domain PD_AO
+# (Power Domain PD_AO is "supply-only" domain; Power Domain PD_SD is used.)
+
+create_power_switch PD_AO_SD_1_psw_nPwrUp1 \
+               -domain                 PD_SD \
+               -input_supply_port      { TVDD     VDD } \
+               -output_supply_port     { VDD      VVDD } \
+               -control_port           { NSLEEPIN   nPwrUp1 } \
+               -ack_port               { NSLEEPOUT  ack_port1 } \
+               -on_state               { PWRON    TVDD { !NSLEEPIN } } \
+               -off_state              { PWROFF   { NSLEEPIN } }
+
+map_power_switch PD_AO_SD_1_psw_nPwrUp1 \
+               -domain PD_SD \
+               -lib_cells              " \
+                                       HDR*SI* \
+                                       "
+create_power_switch PD_AO_SD_1_psw_nPwrUp2 \
+               -domain                 PD_SD \
+               -input_supply_port      { TVDD     VDD } \
+               -output_supply_port     { VDD      VVDD } \
+               -control_port           { NSLEEPIN   nPwrUp2 } \
+               -ack_port               { NSLEEPOUT  ack_port2 } \
+               -on_state               { PWRON    TVDD { !NSLEEPIN } } \
+               -off_state              { PWROFF   { NSLEEPIN } }
+
+map_power_switch PD_AO_SD_1_psw_nPwrUp2 \
+               -domain PD_SD \
+               -lib_cells              " \
+                                       HDR*SI* \
+                                       "
+
+#Section 3 & 4: Power State and Mode Declaration 
+####################################################################
+
+## Add power state OFF to supply set PD_SD_SS
+add_power_state PD_SD_SS  -state {OFF \
+                    -supply_expr { power == { OFF } && ground == { FULL_ON 0.0 } } \
+                    -simstate    CORRUPT \
+                }
+## Add power state ON to supply set PD_SD_SS
+add_power_state PD_SD_SS  -state {ON \
+                    -supply_expr { power == { FULL_ON 0.9 }  && ground == { FULL_ON 0.0 } } \
+                    -simstate    NORMAL \
+                } \
+                -update
+## Add power state ON to supply set PD_AO_SS
+add_power_state PD_AO_SS  -state {ON \
+                    -supply_expr { power == { FULL_ON 0.9 }  && ground == { FULL_ON 0.0 } } \
+                    -simstate    NORMAL \
+                }
+
+
+add_power_state PD_AO \
+-state {Core_OFF \
+         -logic_expr   { PD_SD_SS == OFF && PD_AO_SS == ON } } \
+-state {Core_BRINGUP \
+         -logic_expr   { PD_SD_SS == ON && PD_AO_SS == ON } }
+
+
+### Create the list of supplies.
+#create_pst core_pt -supplies { [('Core_OFF', ' { PD_AO_SS == OFF && PD_SD_SS == OFF && PD_AO_SS == ON } } \\'), ('Core_BRINGUP', ' { PD_AO_SS == ON && PD_SD_SS == ON && PD_AO_SS == ON } }')] }
+#add_pst_state  Core_OFF -pst core_pt -state { OFF OFF ON } 
+#add_pst_state  Core_BRINGUP -pst core_pt -state { ON ON ON } 
+
+
+# Section 5: Isolation Declaration 
+####################################################################
+
+
+# SD --> AO
+set_isolation  iso_SD2AO \
+               -domain                 PD_AO \
+               -source                 PD_SD \
+               -sink                   PD_AO \
+               -isolation_supply_set   PD_AO_SS \
+               -clamp_value            0 \
+               -isolation_signal       nISOLATE \
+               -isolation_sense        low \
+               -name_prefix            iso_SD2AO_ \
+               -location               self 
+
+map_isolation_cell  iso_SD2AO \
+               -domain                 PD_AO \
+               -lib_cells              { \
+                                       ISOLO* \
+                                       }
+
+
+# Section 6: Level Shifting Declaration 
+####################################################################
+
+
+# Section 7: Retention Declaration 
+####################################################################
+
+#set_port_attributes \
+#-applies_to inputs \
+#-driver_supply  PD_AO_SS 
+#
+#set_port_attributes \
+#-applies_to outputs \
+#-receiver_supply  PD_AO_SS
+#
+#set_port_attributes \
+#-applies_to both \
+#-receiver_supply PD_AO_SS 
+
+

@@ -1,0 +1,57 @@
+upf_version 2.1
+
+set LVL_HL_CELLS LVL*HLD4*
+set LVL_LH_CELLS LVL*LHD4*
+
+create_supply_net VDD
+create_supply_net VDDL
+create_supply_net VSS
+create_supply_set ss_main -function {power VDD}  -function {ground VSS}
+create_supply_set ss_dec  -function {power VDDL} -function {ground VSS}
+
+create_power_domain PD_TOP \
+    -elements . \
+    -supply {primary ss_main}
+
+create_power_domain PD_DEC \
+    -elements {dec_bin_sig_inst} \
+    -supply {primary ss_dec}
+
+create_supply_port VDD  -domain PD_TOP -direction in
+create_supply_port VDDL -domain PD_TOP -direction in
+create_supply_port VSS  -domain PD_TOP -direction in
+
+connect_supply_net VDD  -ports VDD
+connect_supply_net VDDL -ports VDDL
+connect_supply_net VSS  -ports VSS
+
+add_power_state -supply ss_main -state { ON  -supply_expr { power == {FULL_ON 1.0} && ground == {FULL_ON 0.0} } }
+add_power_state -supply ss_dec  -state { ON  -supply_expr { power == {FULL_ON 0.9} && ground == {FULL_ON 0.0} } }
+
+add_power_state -domain PD_TOP \
+        -state {RUN   -logic_expr { ss_main==ON && ss_dec==ON}}
+
+set_level_shifter LVL_MAIN2DEC \
+    -domain PD_DEC \
+    -rule high_to_low \
+    -source ss_main \
+    -sink ss_dec \
+    -name_prefix LVL_MAIN2DEC \
+    -location self
+
+map_level_shifter_cell LVL_MAIN2DEC \
+        -domain PD_DEC \
+        -lib_cells $LVL_HL_CELLS
+
+set_level_shifter LVL_DEC2MAIN \
+    -domain PD_DEC \
+    -rule low_to_high \
+    -source ss_dec \
+    -sink ss_main \
+    -name_prefix LVL_DEC2MAIN \
+    -location self
+
+map_level_shifter_cell LVL_DEC2MAIN \
+        -domain PD_DEC \
+        -lib_cells $LVL_LH_CELLS
+

@@ -1,0 +1,47 @@
+create_supply_net VDD
+create_supply_net VDDL
+create_supply_net VSS
+create_supply_set ss_main -function {power VDD}  -function {ground VSS}
+create_supply_set ss_cu   -function {power VDDL} -function {ground VSS}
+
+create_power_domain PD_TOP \
+    -elements . \
+    -supply {primary ss_main}
+
+create_power_domain PD_CU \
+    -elements {dec_bin_cu_inst} \
+    -supply {primary ss_cu}
+
+create_supply_port VDD  -domain PD_TOP -direction in
+create_supply_port VDDL -domain PD_TOP -direction in
+create_supply_port VSS  -domain PD_TOP -direction in
+
+connect_supply_net VDD  -ports VDD
+connect_supply_net VDDL -ports VDDL
+connect_supply_net VSS  -ports VSS
+
+add_power_state -supply ss_main -state { ON  -supply_expr { power == {FULL_ON 1.2} && ground == {FULL_ON 0.0} } }
+add_power_state -supply ss_cu   -state { ON  -supply_expr { power == {FULL_ON 1.0} && ground == {FULL_ON 0.0} } }
+
+add_power_state -domain PD_TOP \
+        -state {RUN   -logic_expr { ss_main==ON && ss_cu==ON}}
+
+set_level_shifter LVL_MAIN2CU \
+    -domain PD_CU \
+    -rule both \
+    -source ss_main \
+    -sink ss_cu \
+    -name_prefix LVL_MAIN2CU \
+    -location self \
+    -applies_to inputs 
+
+set_level_shifter LVL_CU2MAIN \
+    -domain PD_CU \
+    -rule both \
+    -source ss_cu \
+    -sink ss_main \
+    -name_prefix LVL_CU2MAIN \
+    -location self \
+    -applies_to inputs 
+
+
