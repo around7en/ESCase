@@ -1,0 +1,274 @@
+# -----------------------------------------------------------------------------
+#  The confidential and proprietary information contained in this file may
+#  only be used by a person authorised under and to the extent permitted
+#  by a subsisting licensing agreement from ARM Limited or its affiliates.
+#
+#             (C) COPYRIGHT 2014-2020 ARM Limited or its affiliates.
+#                 ALL RIGHTS RESERVED
+#
+#  This entire notice must be reproduced on all copies of this file
+#  and copies of this file may only be made by a person if such person is
+#  permitted to do so under the terms of a subsisting license agreement
+#  from ARM Limited or its affiliates.
+#
+#       SVN Information
+#
+#       Checked In          : $Date: 2019-08-29 17:57:03 +0800 (Thu, 29 Aug 2019) $
+#
+#       Revision            : $Revision: 224196 $
+#
+#       Release Information : STAR-r1p0-00eac0
+#
+# -----------------------------------------------------------------------------
+# Function: STAR successive refinement implementation UPF file
+# -----------------------------------------------------------------------------
+
+#-------------------------------------------------------------------------------
+# Unified Power Format (IEEE Std 1801-2009)
+#-------------------------------------------------------------------------------
+
+upf_version 2.0
+
+#-------------------------------------------------------------------------------
+# Supply ports and nets
+#-------------------------------------------------------------------------------
+
+create_supply_port -direction in VDD
+create_supply_port -direction in VSS
+
+create_supply_net VDD
+create_supply_net VSS
+
+connect_supply_net VDD -ports VDD
+connect_supply_net VSS -ports VSS
+
+create_supply_net VCORE_sw     -resolve parallel
+create_supply_net VFPU_sw      -resolve parallel
+create_supply_net VDEBUG_sw    -resolve parallel
+create_supply_net VRAMS_sw     -resolve parallel
+
+connect_supply_net VRAMS_sw -ports gen_rams_u_pd_rams/gen_dcache_u_dram_data0/VDDCE
+connect_supply_net VRAMS_sw -ports gen_rams_u_pd_rams/gen_dcache_u_dram_data0/VDDPE
+connect_supply_net VSS      -ports gen_rams_u_pd_rams/gen_dcache_u_dram_data0/VSSE
+connect_supply_net VRAMS_sw -ports gen_rams_u_pd_rams/gen_dcache_u_dram_data1/VDDCE
+connect_supply_net VRAMS_sw -ports gen_rams_u_pd_rams/gen_dcache_u_dram_data1/VDDPE
+connect_supply_net VSS      -ports gen_rams_u_pd_rams/gen_dcache_u_dram_data1/VSSE
+connect_supply_net VRAMS_sw -ports gen_rams_u_pd_rams/gen_dcache_u_dram_data2/VDDCE
+connect_supply_net VRAMS_sw -ports gen_rams_u_pd_rams/gen_dcache_u_dram_data2/VDDPE
+connect_supply_net VSS      -ports gen_rams_u_pd_rams/gen_dcache_u_dram_data2/VSSE
+connect_supply_net VRAMS_sw -ports gen_rams_u_pd_rams/gen_dcache_u_dram_data3/VDDCE
+connect_supply_net VRAMS_sw -ports gen_rams_u_pd_rams/gen_dcache_u_dram_data3/VDDPE
+connect_supply_net VSS      -ports gen_rams_u_pd_rams/gen_dcache_u_dram_data3/VSSE
+
+connect_supply_net VRAMS_sw -ports gen_rams_u_pd_rams/gen_dcache_u_dram_tag0/VDDCE
+connect_supply_net VRAMS_sw -ports gen_rams_u_pd_rams/gen_dcache_u_dram_tag0/VDDPE
+connect_supply_net VSS      -ports gen_rams_u_pd_rams/gen_dcache_u_dram_tag0/VSSE
+connect_supply_net VRAMS_sw -ports gen_rams_u_pd_rams/gen_dcache_u_dram_tag1/VDDCE
+connect_supply_net VRAMS_sw -ports gen_rams_u_pd_rams/gen_dcache_u_dram_tag1/VDDPE
+connect_supply_net VSS      -ports gen_rams_u_pd_rams/gen_dcache_u_dram_tag1/VSSE
+connect_supply_net VRAMS_sw -ports gen_rams_u_pd_rams/gen_dcache_u_dram_tag2/VDDCE
+connect_supply_net VRAMS_sw -ports gen_rams_u_pd_rams/gen_dcache_u_dram_tag2/VDDPE
+connect_supply_net VSS      -ports gen_rams_u_pd_rams/gen_dcache_u_dram_tag2/VSSE
+connect_supply_net VRAMS_sw -ports gen_rams_u_pd_rams/gen_dcache_u_dram_tag3/VDDCE
+connect_supply_net VRAMS_sw -ports gen_rams_u_pd_rams/gen_dcache_u_dram_tag3/VDDPE
+connect_supply_net VSS      -ports gen_rams_u_pd_rams/gen_dcache_u_dram_tag3/VSSE
+
+#connect_supply_net VRAMS_sw -ports gen_rams_u_pd_rams/gen_dcache_u_dram_dirty/VDDCE
+#connect_supply_net VRAMS_sw -ports gen_rams_u_pd_rams/gen_dcache_u_dram_dirty/VDDPE
+#connect_supply_net VSS      -ports gen_rams_u_pd_rams/gen_dcache_u_dram_dirty/VSSE
+
+connect_supply_net VRAMS_sw -ports gen_rams_u_pd_rams/gen_icache_u_iram_data0/VDDCE
+connect_supply_net VRAMS_sw -ports gen_rams_u_pd_rams/gen_icache_u_iram_data0/VDDPE
+connect_supply_net VSS      -ports gen_rams_u_pd_rams/gen_icache_u_iram_data0/VSSE
+connect_supply_net VRAMS_sw -ports gen_rams_u_pd_rams/gen_icache_u_iram_data1/VDDCE
+connect_supply_net VRAMS_sw -ports gen_rams_u_pd_rams/gen_icache_u_iram_data1/VDDPE
+connect_supply_net VSS      -ports gen_rams_u_pd_rams/gen_icache_u_iram_data1/VSSE
+connect_supply_net VRAMS_sw -ports gen_rams_u_pd_rams/gen_icache_u_iram_tag0/VDDCE
+connect_supply_net VRAMS_sw -ports gen_rams_u_pd_rams/gen_icache_u_iram_tag0/VDDPE
+connect_supply_net VSS      -ports gen_rams_u_pd_rams/gen_icache_u_iram_tag0/VSSE
+connect_supply_net VRAMS_sw -ports gen_rams_u_pd_rams/gen_icache_u_iram_tag1/VDDCE
+connect_supply_net VRAMS_sw -ports gen_rams_u_pd_rams/gen_icache_u_iram_tag1/VDDPE
+connect_supply_net VSS      -ports gen_rams_u_pd_rams/gen_icache_u_iram_tag1/VSSE
+
+#connect_supply_net VRAMS_sw  -ports PDRAMS_sw_*/VDD
+#connect_supply_net VFPU_sw   -ports PDFPU_sw_*/VDD
+#connect_supply_net VDEBUG_sw -ports PDDEBUG_sw_*/VDD
+#connect_supply_net VCORE_sw  -ports PDCORE_sw_*/VDD
+#connect_supply_net VRAMS_sw  -ports gen_rams_u_pd_rams/PDRAMS_sw_Hammer_psoI_PDRAMS*/VDD
+
+#-------------------------------------------------------------------------------
+# Power Switches
+#-------------------------------------------------------------------------------
+
+create_power_switch sw_T_CORE \
+    -input_supply_port  { sw_in     VDD } \
+    -output_supply_port { sw_out    VCORE_sw } \
+    -control_port       " sw_ctrl   nPWRUPCORE_TRICKLE" \
+    -on_state           { on_state  sw_in {~sw_ctrl} } \
+    -off_state          { off_state {sw_ctrl} } \
+    -domain PDCORE
+
+create_power_switch sw_H_CORE \
+    -input_supply_port  { sw_in     VDD } \
+    -output_supply_port { sw_out    VCORE_sw } \
+    -control_port       " sw_ctrl   nPWRUPCORE_HAMMER" \
+    -on_state           { on_state  sw_in {~sw_ctrl} } \
+    -off_state          { off_state {sw_ctrl} } \
+    -domain PDCORE
+
+create_power_switch sw_T_FPU \
+    -input_supply_port  { sw_in     VDD } \
+    -output_supply_port { sw_out    VFPU_sw } \
+    -control_port       " sw_ctrl   nPWRUPFPU_TRICKLE" \
+    -on_state           { on_state  sw_in {~sw_ctrl} } \
+    -off_state          { off_state {sw_ctrl} } \
+    -domain PDFPU
+
+create_power_switch sw_H_FPU \
+    -input_supply_port  { sw_in     VDD } \
+    -output_supply_port { sw_out    VFPU_sw } \
+    -control_port       " sw_ctrl   nPWRUPFPU_HAMMER" \
+    -on_state           { on_state  sw_in {~sw_ctrl} } \
+    -off_state          { off_state {sw_ctrl} } \
+    -domain PDFPU
+
+create_power_switch sw_T_DEBUG \
+    -input_supply_port  { sw_in     VDD } \
+    -output_supply_port { sw_out    VDEBUG_sw } \
+    -control_port       " sw_ctrl   nPWRUPDEBUG_TRICKLE" \
+    -on_state           { on_state  sw_in {~sw_ctrl} } \
+    -off_state          { off_state {sw_ctrl} } \
+    -domain PDDEBUG
+
+create_power_switch sw_H_DEBUG \
+    -input_supply_port  { sw_in     VDD } \
+    -output_supply_port { sw_out    VDEBUG_sw } \
+    -control_port       " sw_ctrl   nPWRUPDEBUG_HAMMER" \
+    -on_state           { on_state  sw_in {~sw_ctrl} } \
+    -off_state          { off_state {sw_ctrl} } \
+    -domain PDDEBUG
+
+create_power_switch sw_T_RAMS \
+    -input_supply_port  { sw_in     VDD } \
+    -output_supply_port { sw_out    VRAMS_sw } \
+    -control_port       " sw_ctrl   nPWRUPRAMS_TRICKLE" \
+    -on_state           { on_state  sw_in {~sw_ctrl} } \
+    -off_state          { off_state {sw_ctrl} } \
+    -domain PDRAMS
+
+create_power_switch sw_H_RAMS \
+    -input_supply_port  { sw_in     VDD } \
+    -output_supply_port { sw_out    VRAMS_sw } \
+    -control_port       " sw_ctrl   nPWRUPRAMS_HAMMER" \
+    -on_state           { on_state  sw_in {~sw_ctrl} } \
+    -off_state          { off_state {sw_ctrl} } \
+    -domain PDRAMS
+
+#-------------------------------------------------------------------------------
+# Supply set updates
+#-------------------------------------------------------------------------------
+
+create_supply_set PDSTAR.primary -update \
+    -function {power VDD} \
+    -function {ground VSS}
+
+create_supply_set PDCORE.primary -update \
+    -function {power VCORE_sw} \
+    -function {ground VSS}
+
+create_supply_set PDFPU.primary -update \
+    -function {power VFPU_sw} \
+    -function {ground VSS}
+
+create_supply_set PDDEBUG.primary -update \
+    -function {power VDEBUG_sw} \
+    -function {ground VSS}
+
+create_supply_set PDRAMS.primary -update \
+    -function {power VRAMS_sw} \
+    -function {ground VSS}
+
+#-------------------------------------------------------------------------------
+# Isolation updates
+#-------------------------------------------------------------------------------
+
+
+
+#-------------------------------------------------------------------------------
+# Isolation cells
+#-------------------------------------------------------------------------------
+
+#-------- CORE iso ---------
+use_interface_cell IsoCore0 \
+    -domain PDCORE \
+    -strategy iso_core_0 \
+    -lib_cells { A2ISOO_X1M_A9TR50 A2ISOO_X2M_A9TR50 A2ISOO_X4M_A9TR50 A2ISOO_X8M_A9TR50 }
+
+use_interface_cell IsoCore1 \
+    -domain PDCORE \
+    -strategy iso_core_1 \
+    -lib_cells { O2ISOO_X1M_A9TR50 O2ISOO_X2M_A9TR50 O2ISOO_X4M_A9TR50 O2ISOO_X8M_A9TR50 }
+
+#-------- FPU iso ---------
+use_interface_cell IsoFpu0 \
+    -domain PDFPU \
+    -strategy iso_fpu_0 \
+    -lib_cells { A2ISOO_X1M_A9TR50 A2ISOO_X2M_A9TR50 A2ISOO_X4M_A9TR50 A2ISOO_X8M_A9TR50 }
+
+use_interface_cell IsoFpu1 \
+    -domain PDFPU \
+    -strategy iso_fpu_1 \
+    -lib_cells { O2ISOO_X1M_A9TR50 O2ISOO_X2M_A9TR50 O2ISOO_X4M_A9TR50 O2ISOO_X8M_A9TR50 }
+
+#-------- DEBUG iso ---------
+use_interface_cell IsoDebug0 \
+    -domain PDDEBUG \
+    -strategy iso_debug_0 \
+    -lib_cells { A2ISOO_X1M_A9TR50 A2ISOO_X2M_A9TR50 A2ISOO_X4M_A9TR50 A2ISOO_X8M_A9TR50 }
+
+use_interface_cell IsoDebug1 \
+    -domain PDDEBUG \
+    -strategy iso_debug_1 \
+    -lib_cells { O2ISOO_X1M_A9TR50 O2ISOO_X2M_A9TR50 O2ISOO_X4M_A9TR50 O2ISOO_X8M_A9TR50 }
+
+#-------- RAM iso ---------
+use_interface_cell IsoRams0 \
+    -domain PDRAMS \
+    -strategy iso_rams_0 \
+    -lib_cells { A2ISOO_X1M_A9TR50 A2ISOO_X2M_A9TR50 A2ISOO_X4M_A9TR50 A2ISOO_X8M_A9TR50 }
+
+#-------------------------------------------------------------------------------
+# Power State logic expr update for Supply Sets
+#-------------------------------------------------------------------------------
+
+if {[info exists implementation] && $implementation} {
+
+  add_power_state PDSTAR.primary -update \
+    -state ON     {-supply_expr { power == `{ FULL_ON, 0.99 } && ground == `{ FULL_ON, 0}  } }
+
+  add_power_state PDCORE.primary -update \
+    -state ON     {-supply_expr { power == `{ FULL_ON, 0.99 } && ground == `{ FULL_ON, 0}  } }  \
+    -state OFF    {-supply_expr { power == OFF                && ground == `{ FULL_ON, 0}  } }
+
+  add_power_state PDFPU.primary -update \
+    -state ON     {-supply_expr { power == `{ FULL_ON, 0.99 } && ground == `{ FULL_ON, 0}  } }  \
+    -state OFF    {-supply_expr { power == OFF                && ground == `{ FULL_ON, 0}  } }
+
+  add_power_state PDDEBUG.primary -update \
+    -state ON     {-supply_expr { power == `{ FULL_ON, 0.99 } && ground == `{ FULL_ON, 0}  } }  \
+    -state OFF    {-supply_expr { power == OFF                && ground == `{ FULL_ON, 0}  } }
+
+  add_power_state PDRAMS.primary -update \
+    -state ON     {-supply_expr { power == `{ FULL_ON, 0.99 } && ground == `{ FULL_ON, 0}  } }  \
+    -state OFF    {-supply_expr { power == OFF                && ground == `{ FULL_ON, 0}  } }
+}
+
+#-------------------------------------------------------------------------------
+# Port Attributes
+#-------------------------------------------------------------------------------
+
+set_port_attributes -ports "nPWRUPFPU_HAMMER   nPWRUPFPU_TRICKLE   nISOLATEFPU"   -driver_supply PDSTAR.primary
+set_port_attributes -ports "nPWRUPCORE_HAMMER  nPWRUPCORE_TRICKLE  nISOLATECORE"  -driver_supply PDSTAR.primary
+set_port_attributes -ports "nPWRUPDEBUG_HAMMER nPWRUPDEBUG_TRICKLE nISOLATEDEBUG" -driver_supply PDSTAR.primary
+set_port_attributes -ports "nPWRUPRAMS_HAMMER   nPWRUPRAMS_TRICKLE   nISOLATERAMS"  -driver_supply PDSTAR.primary
+

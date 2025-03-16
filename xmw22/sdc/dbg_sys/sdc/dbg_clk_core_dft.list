@@ -1,0 +1,15 @@
+if {![info exist DESIGN(dft,clk_hier)]} {
+    set DESIGN(dft,clk_hier) "u_dbg_clk_core_wrap/u_dbg_clk_core/"
+}
+
+set DESIGN(mbist,pin,cons0) [list \
+    $DESIGN(dft,clk_hier)u_cmind_clk_sw2_clk_dbg_uart/u_cmind_cell_icg_clk_in0/cmind_uj_ckcell/Q \
+]
+
+set DESIGN(mbist,pin,cons1) [list \
+    $DESIGN(dft,clk_hier)u_cmind_clk_sw2_clk_dbg_uart/u_cmind_cell_icg_clk_in1/cmind_uj_ckcell/E \
+]
+
+set DESIGN(occ_clock_list) [list \
+    standard ptest_slow_clock $DESIGN(dft,clk_hier)u_ptest_slow_clock_occ_buf/cmind_uj_ckcell/I \
+]

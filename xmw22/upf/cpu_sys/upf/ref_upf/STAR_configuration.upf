@@ -1,0 +1,219 @@
+
+#-------------------------------------------------------------------------------
+# The confidential and proprietary information contained in this file may
+# only be used by a person authorised under and to the extent permitted
+# by a subsisting licensing agreement from Arm Limited.
+#
+#                 (C) COPYRIGHT 2018-2020 Arm Technology (China) Co., Ltd.
+#                     or its affiliates.
+#                 (C) COPYRIGHT 2015-2020 Arm Limited or its affiliates.
+#                       ALL RIGHTS RESERVED
+#
+# This entire notice must be reproduced on all copies of this file
+# and copies of this file may only be made by a person if such person is
+# permitted to do so under the terms of a subsisting license agreement
+# from Arm Limited.
+#
+#      SVN Information
+#
+#      Checked In          : $Date: 2019-08-27 15:48:42 +0800 (Tue, 27 Aug 2019) $
+#
+#      Revision            : $Revision: 224030 $
+#
+#      Release Information : STAR-r1p0-00eac0
+#
+#-------------------------------------------------------------------------------
+#
+#-------------
+# Description
+#-------------
+#  This UPF describes the constraints for STAR, it must be used during
+#  power aware simulation or implementation.
+#
+#  The unconfigured version needs to be rendered before it can be used.
+#  The configured version expects to be called with a scope set to STAR.
+#
+
+upf_version 2.0
+
+#-------------------------------------------------------------------------------
+# Power Switch Control Signals
+#-------------------------------------------------------------------------------
+
+create_logic_port -direction in nPWRUPCORE_HAMMER
+create_logic_port -direction in nPWRUPCORE_TRICKLE
+create_logic_port -direction in nPWRUPFPU_HAMMER
+create_logic_port -direction in nPWRUPFPU_TRICKLE
+create_logic_port -direction in nPWRUPDEBUG_HAMMER
+create_logic_port -direction in nPWRUPDEBUG_TRICKLE
+create_logic_port -direction in nPWRUPRAMS_HAMMER
+create_logic_port -direction in nPWRUPRAMS_TRICKLE
+
+create_logic_net nPWRUPCORE_HAMMER
+create_logic_net nPWRUPCORE_TRICKLE
+create_logic_net nPWRUPFPU_HAMMER
+create_logic_net nPWRUPFPU_TRICKLE
+create_logic_net nPWRUPDEBUG_HAMMER
+create_logic_net nPWRUPDEBUG_TRICKLE
+create_logic_net nPWRUPRAMS_HAMMER
+create_logic_net nPWRUPRAMS_TRICKLE
+
+connect_logic_net nPWRUPCORE_HAMMER     -ports nPWRUPCORE_HAMMER
+connect_logic_net nPWRUPCORE_TRICKLE    -ports nPWRUPCORE_TRICKLE
+connect_logic_net nPWRUPFPU_HAMMER      -ports nPWRUPFPU_HAMMER
+connect_logic_net nPWRUPFPU_TRICKLE     -ports nPWRUPFPU_TRICKLE
+connect_logic_net nPWRUPDEBUG_HAMMER    -ports nPWRUPDEBUG_HAMMER
+connect_logic_net nPWRUPDEBUG_TRICKLE   -ports nPWRUPDEBUG_TRICKLE
+connect_logic_net nPWRUPRAMS_HAMMER    -ports nPWRUPRAMS_HAMMER
+connect_logic_net nPWRUPRAMS_TRICKLE   -ports nPWRUPRAMS_TRICKLE
+
+#-------------------------------------------------------------------------------
+# Isolation Strategy
+#-------------------------------------------------------------------------------
+
+#create_logic_port -direction in nISOLATECORE
+#create_logic_port -direction in nISOLATEFPU
+#create_logic_port -direction in nISOLATEDEBUG
+#create_logic_port -direction in nISOLATERAMS
+
+#create_logic_net nISOLATECORE
+#create_logic_net nISOLATEFPU
+#create_logic_net nISOLATEDEBUG
+#create_logic_net nISOLATERAMS
+
+#connect_logic_net nISOLATECORE     -ports nISOLATECORE
+#connect_logic_net nISOLATEFPU      -ports nISOLATEFPU
+#connect_logic_net nISOLATEDEBUG    -ports nISOLATEDEBUG
+#connect_logic_net nISOLATERAMS    -ports nISOLATERAMS
+
+#-------- CORE iso ---------
+set_isolation iso_core_0 -domain PDCORE \
+    -isolation_supply_set PDSTAR.primary \
+    -clamp_value 0 \
+    -applies_to outputs \
+    -isolation_signal nISOLATECORE \
+    -isolation_sense low \
+    -location self
+
+set_isolation iso_core_1 -domain PDCORE \
+    -isolation_supply_set PDSTAR.primary \
+    -clamp_value 1 \
+    -elements "$CORE_CLAMP1" \
+    -isolation_signal nISOLATECORE \
+    -isolation_sense low \
+    -location self
+
+#-------- FPU iso ---------
+set_isolation iso_fpu_0 -domain PDFPU \
+    -isolation_supply_set PDSTAR.primary \
+    -clamp_value 0 \
+    -applies_to outputs \
+    -isolation_signal nISOLATEFPU \
+    -isolation_sense low \
+    -location self
+
+set_isolation iso_fpu_1 -domain PDFPU \
+    -isolation_supply_set PDSTAR.primary \
+    -clamp_value 1 \
+    -elements "$FPU_CLAMP1" \
+    -isolation_signal nISOLATEFPU \
+    -isolation_sense low \
+    -location self
+
+#-------- DEBUG iso ---------
+set_isolation iso_debug_0 -domain PDDEBUG \
+    -isolation_supply_set PDSTAR.primary \
+    -clamp_value 0 \
+    -applies_to outputs \
+    -isolation_signal nISOLATEDEBUG \
+    -isolation_sense low \
+    -location self
+
+set_isolation iso_debug_1 -domain PDDEBUG \
+    -isolation_supply_set PDSTAR.primary \
+    -clamp_value 1 \
+    -elements "$DEBUG_CLAMP1" \
+    -isolation_signal nISOLATEDEBUG \
+    -isolation_sense low \
+    -location self
+
+#-------- RAMS iso ---------
+set_isolation iso_rams_0 -domain PDRAMS \
+    -isolation_supply_set PDSTAR.primary \
+    -clamp_value 0 \
+    -applies_to outputs \
+    -isolation_signal nISOLATERAMS \
+    -isolation_sense low \
+    -location self
+
+#set_isolation iso_rams_1 -domain PDRAMS \
+#    -isolation_supply_set PDSTAR.primary \
+#    -clamp_value 1 \
+#    -isolation_signal nISOLATERAMS \
+#    -isolation_sense low \
+#    -location self
+
+
+#-------------------------------------------------------------------------------
+# Power State
+#-------------------------------------------------------------------------------
+if {![info exists implementation] || !$implementation} {
+
+add_power_state PDCORE.primary -update \
+  -state ON  {-logic_expr {nPWRUPCORE_HAMMER == 0 && nPWRUPCORE_TRICKLE == 0}} \
+  -state OFF {-logic_expr {nPWRUPCORE_HAMMER == 1 || nPWRUPCORE_TRICKLE == 1}}
+
+add_power_state PDFPU.primary -update \
+  -state ON  {-logic_expr {nPWRUPFPU_HAMMER == 0 && nPWRUPFPU_TRICKLE == 0}} \
+  -state OFF {-logic_expr {nPWRUPFPU_HAMMER == 1 || nPWRUPFPU_TRICKLE == 1}}
+
+add_power_state PDDEBUG.primary -update \
+  -state ON  {-logic_expr {nPWRUPDEBUG_HAMMER == 0 && nPWRUPDEBUG_TRICKLE == 0}} \
+  -state OFF {-logic_expr {nPWRUPDEBUG_HAMMER == 1 || nPWRUPDEBUG_TRICKLE == 1}}
+
+add_power_state PDRAMS.primary -update \
+  -state ON  {-logic_expr {nPWRUPRAMS_HAMMER == 0 && nPWRUPRAMS_TRICKLE == 0}} \
+  -state OFF {-logic_expr {nPWRUPRAMS_HAMMER == 1 || nPWRUPRAMS_TRICKLE == 1}}
+
+add_power_state PDCORE -update \
+  -state RUN {-logic_expr { nPWRUPCORE_HAMMER == 0 && nPWRUPCORE_TRICKLE == 0}} \
+  -state SHD {-logic_expr {(nPWRUPCORE_HAMMER == 1 || nPWRUPCORE_TRICKLE == 1) && nISOLATECORE == 0}}
+
+add_power_state PDFPU -update \
+  -state RUN {-logic_expr { nPWRUPFPU_HAMMER == 0 && nPWRUPFPU_TRICKLE == 0}} \
+  -state SHD {-logic_expr {(nPWRUPFPU_HAMMER == 1 || nPWRUPFPU_TRICKLE == 1) && nISOLATEFPU == 0}}
+
+add_power_state PDDEBUG -update \
+  -state RUN {-logic_expr { nPWRUPDEBUG_HAMMER == 0 && nPWRUPDEBUG_TRICKLE == 0}} \
+  -state SHD {-logic_expr {(nPWRUPDEBUG_HAMMER == 1 || nPWRUPDEBUG_TRICKLE == 1) && nISOLATEDEBUG == 0}}
+
+add_power_state PDRAMS -update \
+  -state RUN {-logic_expr { nPWRUPRAMS_HAMMER == 0 && nPWRUPRAMS_TRICKLE == 0}} \
+  -state SHD {-logic_expr {(nPWRUPRAMS_HAMMER == 1 || nPWRUPRAMS_TRICKLE == 1) && nISOLATERAMS == 0}}
+}
+
+#-------------------------------------------------------------------------------
+# Supply Update with supply expressions
+#-------------------------------------------------------------------------------
+if {![info exists implementation] || !$implementation} {
+
+add_power_state PDSTAR.primary -update \
+  -state ON  {-supply_expr {power == FULL_ON && ground == FULL_ON}}
+
+add_power_state PDCORE.primary -update \
+  -state ON  {-supply_expr {power == FULL_ON && ground == FULL_ON}} \
+  -state OFF {-supply_expr {(power == OFF || power == PARTIAL_ON)     && ground == FULL_ON}}
+
+add_power_state PDFPU.primary -update \
+  -state ON  {-supply_expr {power == FULL_ON && ground == FULL_ON}} \
+  -state OFF {-supply_expr {(power == OFF || power == PARTIAL_ON)     && ground == FULL_ON}}
+
+add_power_state PDDEBUG.primary -update \
+  -state ON  {-supply_expr {power == FULL_ON && ground == FULL_ON}} \
+  -state OFF {-supply_expr {(power == OFF || power == PARTIAL_ON)     && ground == FULL_ON}}
+
+add_power_state PDRAMS.primary -update \
+  -state ON  {-supply_expr {power == FULL_ON && ground == FULL_ON}} \
+  -state OFF {-supply_expr {(power == OFF || power == PARTIAL_ON)     && ground == FULL_ON}}
+
+}

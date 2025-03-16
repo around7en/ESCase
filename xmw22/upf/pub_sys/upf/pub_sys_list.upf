@@ -1,0 +1,20 @@
+set pub_sys_no_iso {
+    pubsys_shutdown_ack_n 
+}
+
+set pub_sys_isohi {
+    pubsys_total_pready 
+    pubsys_total_pslverr 
+    top2psram_hreadyout 
+    cpu2psram_hready     
+    ap2psram_hready     
+    cp2psram_hready     
+    pub_deep_sleep_req
+    psram_ctrl_ck_o
+    psram_ctrl_cs_n_o
+    psram_ctrl_reset_o
+}
+    #top2psram_hresp 
+    #cpu2psram_hresp      
+    #ap2psram_hresp      
+    #cp2psram_hresp      

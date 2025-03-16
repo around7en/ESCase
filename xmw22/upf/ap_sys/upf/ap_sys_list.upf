@@ -1,0 +1,47 @@
+set ap_sys_no_iso [ list \
+    apsys_shutdown_ack_n \
+    DP \
+    DM \
+]
+
+set ap_sys_isohi [ list \
+    ap_deep_sleep_req \
+    HREADYOUTS_TOP \
+    HREADYOUTS_CPU \
+    HREADYMUXM_CPU \
+    apsys_dummy_out[16] \
+    apsys_dummy_out[17] \
+    apsys_dummy_out[18] \
+    apsys_dummy_out[19] \
+    apsys_dummy_out[20] \
+    apsys_dummy_out[21] \
+    apsys_dummy_out[22] \
+    apsys_dummy_out[23] \
+    apsys_dummy_out[24] \
+    apsys_dummy_out[25] \
+    apsys_dummy_out[26] \
+    apsys_dummy_out[27] \
+    apsys_dummy_out[28] \
+    apsys_dummy_out[29] \
+    apsys_dummy_out[30] \
+    apsys_dummy_out[31] \
+    spi0_d3_oen \
+    spi0_mosi_oen \
+    spi0_nss_oen \
+    spi0_sclk_oen \
+    spi1_miso_oen \
+    top2ap_anti_ext[1] \
+    qspi_cs_n_o \
+    qspi_sck_en_o \
+    qspi_do_en_o[0] \
+    qspi_do_en_o[1] \
+    qspi_do_en_o[2] \
+    qspi_do_en_o[3] \
+    ext_spi_cs_n_o \
+    ext_spi_sck_en_o \
+    ext_spi_do_en_o[0] \
+    ext_spi_do_en_o[1] \
+    ext_spi_do_en_o[2] \
+    ext_spi_do_en_o[3] \
+]
+

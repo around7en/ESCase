@@ -1,0 +1,45 @@
+connect_supply_net VDD_CORE_APSYS_SW -ports u_ap_sys_top/u_ap_sys_ram_top/u_apsys_dubheram_top/u_apsys_dubheram_top_dubhe_ram_512x64_wrap_0/u_T22ARA1UP512X64K2M4BHA_0/VDDPE
+connect_supply_net VDD_CORE_APSYS_SW -ports u_ap_sys_top/u_ap_sys_ram_top/u_apsys_dubheram_top/u_apsys_dubheram_top_dubhe_ram_512x64_wrap_0/u_T22ARA1UP512X64K2M4BHA_0/VDDCE
+connect_supply_net VSS               -ports u_ap_sys_top/u_ap_sys_ram_top/u_apsys_dubheram_top/u_apsys_dubheram_top_dubhe_ram_512x64_wrap_0/u_T22ARA1UP512X64K2M4BHA_0/VSSE 
+
+connect_supply_net VDD_CORE_APSYS_SW -ports u_ap_sys_top/u_ap_sys_ram_top/u_apsys_usbhs_adma/u_apsys_usbhs_adma_usbhs_adma_72x32_wrap_0/u_T22ARF1HP72X32K1M2HA_0/VDDPE
+connect_supply_net VDD_CORE_APSYS_SW -ports u_ap_sys_top/u_ap_sys_ram_top/u_apsys_usbhs_adma/u_apsys_usbhs_adma_usbhs_adma_72x32_wrap_0/u_T22ARF1HP72X32K1M2HA_0/VDDCE
+connect_supply_net VSS               -ports u_ap_sys_top/u_ap_sys_ram_top/u_apsys_usbhs_adma/u_apsys_usbhs_adma_usbhs_adma_72x32_wrap_0/u_T22ARF1HP72X32K1M2HA_0/VSSE
+
+connect_supply_net VDD_CORE_APSYS_SW -ports u_ap_sys_top/u_ap_sys_ram_top/u_apsys_usbhs_in/u_apsys_usbhs_in_usbhs_in_2064x32_wrap_0/u_T22ARF2HP2064X32K8M8BH_0/VDDPE
+connect_supply_net VDD_CORE_APSYS_SW -ports u_ap_sys_top/u_ap_sys_ram_top/u_apsys_usbhs_in/u_apsys_usbhs_in_usbhs_in_2064x32_wrap_0/u_T22ARF2HP2064X32K8M8BH_0/VDDCE
+connect_supply_net VSS               -ports u_ap_sys_top/u_ap_sys_ram_top/u_apsys_usbhs_in/u_apsys_usbhs_in_usbhs_in_2064x32_wrap_0/u_T22ARF2HP2064X32K8M8BH_0/VSSE
+
+connect_supply_net VDD_CORE_APSYS_SW -ports u_ap_sys_top/u_ap_sys_ram_top/u_apsys_usbhs_out/u_apsys_usbhs_out_usbhs_out_2064x32_wrap_0/u_T22ARF2HP2064X32K8M8BH_0/VDDPE
+connect_supply_net VDD_CORE_APSYS_SW -ports u_ap_sys_top/u_ap_sys_ram_top/u_apsys_usbhs_out/u_apsys_usbhs_out_usbhs_out_2064x32_wrap_0/u_T22ARF2HP2064X32K8M8BH_0/VDDCE
+connect_supply_net VSS               -ports u_ap_sys_top/u_ap_sys_ram_top/u_apsys_usbhs_out/u_apsys_usbhs_out_usbhs_out_2064x32_wrap_0/u_T22ARF2HP2064X32K8M8BH_0/VSSE
+
+connect_supply_net VDD_CORE_APSYS_SW -ports u_ap_sys_top/u_sd3_top/u_sd3_ram_wrap/ram1/u_T22ARADHP256X32K1M4BSA/VDDPE
+connect_supply_net VDD_CORE_APSYS_SW -ports u_ap_sys_top/u_sd3_top/u_sd3_ram_wrap/ram1/u_T22ARADHP256X32K1M4BSA/VDDCE
+connect_supply_net VSS               -ports u_ap_sys_top/u_sd3_top/u_sd3_ram_wrap/ram1/u_T22ARADHP256X32K1M4BSA/VSSE
+
+connect_supply_net VDD_CORE_APSYS_SW -ports u_ap_sys_top/u_sd3_top/u_sd3_ram_wrap/ram2/u_T22ARADHP256X32K1M4BSA/VDDPE
+connect_supply_net VDD_CORE_APSYS_SW -ports u_ap_sys_top/u_sd3_top/u_sd3_ram_wrap/ram2/u_T22ARADHP256X32K1M4BSA/VDDCE
+connect_supply_net VSS               -ports u_ap_sys_top/u_sd3_top/u_sd3_ram_wrap/ram2/u_T22ARADHP256X32K1M4BSA/VSSE
+
+connect_supply_net VDD_CORE_APSYS_SW -ports u_ap_sys_top/u_ap_sys_peri_top/u_CAN0/u_can_ram_top/u_apsys_can_ram_top_can_rx_ram_64x32_wrap_0/u_T22ARF2HP64X32K2M2UH_0/VDDPE
+connect_supply_net VDD_CORE_APSYS_SW -ports u_ap_sys_top/u_ap_sys_peri_top/u_CAN0/u_can_ram_top/u_apsys_can_ram_top_can_rx_ram_64x32_wrap_0/u_T22ARF2HP64X32K2M2UH_0/VDDCE
+connect_supply_net VSS               -ports u_ap_sys_top/u_ap_sys_peri_top/u_CAN0/u_can_ram_top/u_apsys_can_ram_top_can_rx_ram_64x32_wrap_0/u_T22ARF2HP64X32K2M2UH_0/VSSE
+
+connect_supply_net VDD_CORE_APSYS_SW -ports u_ap_sys_top/u_ap_sys_peri_top/u_CAN0/u_can_ram_top/u_apsys_can_ram_top_can_tx_ram_64x32_wrap_0/u_T22ARF2HP64X32K2M2UH_0/VDDPE
+connect_supply_net VDD_CORE_APSYS_SW -ports u_ap_sys_top/u_ap_sys_peri_top/u_CAN0/u_can_ram_top/u_apsys_can_ram_top_can_tx_ram_64x32_wrap_0/u_T22ARF2HP64X32K2M2UH_0/VDDCE
+connect_supply_net VSS               -ports u_ap_sys_top/u_ap_sys_peri_top/u_CAN0/u_can_ram_top/u_apsys_can_ram_top_can_tx_ram_64x32_wrap_0/u_T22ARF2HP64X32K2M2UH_0/VSSE
+
+connect_supply_net VDD_CORE_APSYS_SW -ports u_ap_sys_top/u_ap_sys_peri_top/u_CAN1/u_can_ram_top/u_apsys_can_ram_top_can_rx_ram_64x32_wrap_0/u_T22ARF2HP64X32K2M2UH_0/VDDPE
+connect_supply_net VDD_CORE_APSYS_SW -ports u_ap_sys_top/u_ap_sys_peri_top/u_CAN1/u_can_ram_top/u_apsys_can_ram_top_can_rx_ram_64x32_wrap_0/u_T22ARF2HP64X32K2M2UH_0/VDDCE
+connect_supply_net VSS               -ports u_ap_sys_top/u_ap_sys_peri_top/u_CAN1/u_can_ram_top/u_apsys_can_ram_top_can_rx_ram_64x32_wrap_0/u_T22ARF2HP64X32K2M2UH_0/VSSE
+
+connect_supply_net VDD_CORE_APSYS_SW -ports u_ap_sys_top/u_ap_sys_peri_top/u_CAN1/u_can_ram_top/u_apsys_can_ram_top_can_tx_ram_64x32_wrap_0/u_T22ARF2HP64X32K2M2UH_0/VDDPE
+connect_supply_net VDD_CORE_APSYS_SW -ports u_ap_sys_top/u_ap_sys_peri_top/u_CAN1/u_can_ram_top/u_apsys_can_ram_top_can_tx_ram_64x32_wrap_0/u_T22ARF2HP64X32K2M2UH_0/VDDCE
+connect_supply_net VSS               -ports u_ap_sys_top/u_ap_sys_peri_top/u_CAN1/u_can_ram_top/u_apsys_can_ram_top_can_tx_ram_64x32_wrap_0/u_T22ARF2HP64X32K2M2UH_0/VSSE
+
+connect_supply_net VDD_CORE_APSYS_SW -ports u_ap_sys_top/u_ap_sys_usb2_wrap/u_M31USBH225TL022V_00223601/VCC08D
+connect_supply_net VSS               -ports u_ap_sys_top/u_ap_sys_usb2_wrap/u_M31USBH225TL022V_00223601/GND08D
+
+connect_supply_net VDD_USB33         -ports u_ap_sys_top/u_ap_sys_usb2_wrap/u_M31USBH225TL022V_00223601/VCC33A
+connect_supply_net VSS_USB33         -ports u_ap_sys_top/u_ap_sys_usb2_wrap/u_M31USBH225TL022V_00223601/GND33A

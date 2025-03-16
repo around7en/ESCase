@@ -1,0 +1,387 @@
+
+#-------------------------------------------------------------------------------
+# Unified Power Format (IEEE Std 1801-2013)
+#-------------------------------------------------------------------------------
+
+upf_version 2.1
+
+set PROJ_DIR $env(PROJ_DIR)
+if {![info exist IS_FLAT]} {
+    set IS_FLAT 0
+}
+
+if {![info exist IS_BE]} {
+    set IS_BE 0
+}
+
+if {!$IS_FLAT} {
+    set clamphi_iso_sink_cell "
+        ISOHISGD4BWP7T40P140HVT
+        ISOHISGD4BWP7T35P140HVT
+    "
+    
+    set clamplo_iso_sink_cell "
+        ISOLOSGD4BWP7T40P140HVT
+        ISOLOSGD4BWP7T35P140HVT
+    "
+    
+    set clamphi_elshl_sink_cell "
+        LVLHLCSGD4BWP7T40P140HVT
+        LVLHLCSGD4BWP7T35P140HVT
+    "
+    
+    set clamplo_elshl_sink_cell "
+        LVLHLCLOSGD4BWP7T40P140HVT
+        LVLHLCLOSGD4BWP7T35P140HVT
+    "
+    
+    set lvl_lh_src_cell "
+        LVLSRLHSGD4BWP7T40P140HVT
+        LVLSRLHSGD4BWP7T35P140HVT
+    "
+} else {
+    load_upf $PROJ_DIR/de/common/upf/upf_setup.tcl
+}
+
+#-------------------------------------------------------------------------------
+# Supply ports and nets
+#-------------------------------------------------------------------------------
+
+create_supply_port -direction in VDD_RTC
+create_supply_port -direction in VSS_CORE
+if {!$IS_BE} {
+create_supply_port -direction in VDD_AON
+}
+create_supply_port -direction in VDD_CORE
+
+create_supply_net VDD_RTC
+create_supply_net VSS_CORE
+if {!$IS_BE} {
+create_supply_net VDD_AON
+}
+create_supply_net VDD_CORE
+
+connect_supply_net VDD_RTC  -ports VDD_RTC
+connect_supply_net VSS_CORE -ports VSS_CORE
+if {!$IS_BE} {
+connect_supply_net VDD_AON -ports VDD_AON
+}
+connect_supply_net VDD_CORE -ports VDD_CORE
+
+#-------------------------------------------------------------------------------
+# Supply set 
+#-------------------------------------------------------------------------------
+
+create_supply_set SS_RTC          -function {power VDD_RTC}            -function {ground VSS_CORE}
+
+if {!$IS_BE} {
+create_supply_set SS_AON          -function {power VDD_AON}            -function {ground VSS_CORE}
+}
+
+create_supply_set SS_CORE         -function {power VDD_CORE}           -function {ground VSS_CORE}
+
+#-------------------------------------------------------------------------------
+# Power Domains
+#-------------------------------------------------------------------------------
+
+create_power_domain PD_RTC   -include_scope               -supply {primary SS_RTC} 
+
+#-------------------------------------------------------------------------------
+# Port Attributes
+#-------------------------------------------------------------------------------
+set analog2rtc_inputs [list \
+        anlg_xo32k_ready \
+        rtc_por_b \
+        rtc32k_clk \
+        pb_int \
+        vbus_int \
+        ptest_en \
+]
+set rtc2analog_outputs [list \
+        anlg_aon_iso               \
+        anlg_ldo_aonio_en          \
+        anlg_ldo_rtc_aon_en        \
+        anlg_rc32k_enb             \
+        anlg_rc32k_flt_sel         \
+        anlg_rc32k_freq_trim       \
+        anlg_rc32k_op_itrim        \
+        anlg_rtc_itrim             \
+        anlg_rtc_virtual_loading0p8 \
+        anlg_rtc_virtual_loading1p8 \
+        anlg_rtc_vtrim0p8          \
+        anlg_rtc_vtrim1p8          \
+        anlg_xo32k_cap_sel         \
+        anlg_xo32k_ctrl            \
+        anlg_xo32k_enb             \
+        anlg_xo32k_short_en        \
+]
+
+if {!$IS_FLAT} {
+    set_port_attributes -ports $analog2rtc_inputs  -driver_supply SS_RTC -receiver_supply SS_RTC
+    set_port_attributes -ports $rtc2analog_outputs -receiver_supply SS_RTC -driver_supply SS_RTC
+}
+
+set aon2rtc_inputs_iso1 [list \
+        aon_deep_sleep_req \
+        top_iso_en \
+        rstn_int_dbnc \
+        aon2rtc_dummy[2] \
+        aon2rtc_dummy[3] \
+]
+
+set aon2rtc_inputs_iso0 [list \
+        rtc_prescale_1ms_busy \
+        alarm_irq \
+        rc32k_cali_irq \
+        rc32k_cali_done \
+        aon2rtc_dummy[0] \
+        aon2rtc_dummy[1] \
+]
+
+set rtc2aon_outputs [list \
+        ptest_en_aon \
+        clk_rtc32k_aon \
+        rst_aon_por_n \
+        rtc_prescale_1ms \
+        aon_deep_sleep_hold_exter \
+        rc32k_cali_trig \
+        aon_root_clk_en \
+        rtc2aon_wak_pbint \
+        rtc2aon_wak_vbus \
+        rtc2aon_wak_pwr \
+        rtc2aon_wak_rstkey_deassert \
+        clk_rstkey_dbnc \
+        rst_rstkey_dbnc_n \
+        rstkey_dbnc_start \
+        rstkey_dbnc_int_en \
+        rstkey_dbnc_int_clr \
+        rstkey_op_aon \
+        rst_key_n_aon \
+        rstkey_mask \
+        rstkey_root_clk_en_aon \
+        rstkey_iso_en_aon \
+        force_turnoff_aon \
+        intc_src_mask_aon \
+        rtc2aon_dummy \
+]
+
+if {!$IS_FLAT} {
+    if {!$IS_BE} {
+        set_port_attributes -ports $aon2rtc_inputs_iso0 -driver_supply SS_AON
+        set_port_attributes -ports $aon2rtc_inputs_iso1 -driver_supply SS_AON
+        set_port_attributes -ports $rtc2aon_outputs -receiver_supply SS_AON 
+    }
+}
+
+set top2rtc_inputs_iso0 [list \
+        psel \
+        penable \
+        pwrite \
+        paddr \
+        praddr \
+        pwdata \
+        pbint_int_clr \
+        vbus_int_clr \
+        pwr_st_int_clr \
+        rstkey_deassert_int_clr \
+        turnoff_gui_int_clr \
+        earlyboot_fail_int_clr \
+        pwr_dn_req_int_clr \
+        xvlo_alarm \
+        c2a_rc32k_freq_trim\
+        rtc_vtrim0p8_wen_hi\
+        rtc_vtrim0p8_wen_lo\
+        dbgbus_rtc_chain_sel \
+        top2rtc_dummy \
+]
+
+
+#set top2rtc_inputs_iso1 [list \
+#]
+
+set rtc2top_outputs [list \
+        clk_rtc32k_top\
+        prdata \
+        int_pbint_req \
+        int_vbus_req \
+        int_aon_pwr \
+        int_rstkey_deassert \
+        int_turnoff_gui \
+        int_earlyboot_fail \
+        int_pwr_dn_req \
+        pb_int_chk \
+        vbus_int_chk \
+        ptest_en_chk \
+        xvlo_en \
+        dbgbus_rtc_data \
+        rtc2top_dummy \
+]
+
+if {!$IS_FLAT} {
+    set_port_attributes -ports $top2rtc_inputs_iso0 -driver_supply SS_CORE
+    set_port_attributes -ports $rtc2top_outputs -receiver_supply SS_CORE
+}
+
+#-------------------------------------------------------------------------------
+# aon iso
+#-------------------------------------------------------------------------------
+
+#normal intf iso1
+if {!$IS_BE} {
+    set_isolation PD_RTC_FROM_AON_ISO1 \
+        -domain PD_RTC \
+        -source SS_AON \
+        -sink SS_RTC \
+        -isolation_supply_set SS_RTC \
+        -clamp_value 1 \
+        -isolation_signal aon_iso_en \
+        -isolation_sense high \
+        -location self \
+        -name_prefix aon_iso1 \
+        -elements $aon2rtc_inputs_iso1
+    
+    map_isolation_cell PD_RTC_FROM_AON_ISO1 \
+        -domain PD_RTC \
+        -lib_cells $clamphi_iso_sink_cell
+    
+    #normal intf iso0
+    set_isolation PD_RTC_FROM_AON_ISO0 \
+        -domain PD_RTC \
+        -source SS_AON \
+        -sink SS_RTC \
+        -isolation_supply_set SS_RTC \
+        -clamp_value 0 \
+        -isolation_signal aon_iso_en \
+        -isolation_sense high \
+        -location self \
+        -name_prefix aon_iso0 \
+        -elements $aon2rtc_inputs_iso0
+    
+    map_isolation_cell PD_RTC_FROM_AON_ISO0 \
+        -domain PD_RTC \
+        -lib_cells $clamplo_iso_sink_cell
+}
+
+#-------------------------------------------------------------------------------
+# top lvl,els
+#-------------------------------------------------------------------------------
+if {[info exist synopsys_program_name] && ( ${synopsys_program_name} == "dc_shell" || ${synopsys_program_name} == "pt_shell" ) } {
+    set_level_shifter PD_RTC_TO_TOP_LVL \
+        -domain PD_RTC \
+        -input_supply SS_RTC \
+        -output_supply SS_CORE \
+        -rule low_to_high \
+        -location self \
+        -elements $rtc2top_outputs
+    map_level_shifter_cell PD_RTC_TO_TOP_LVL \
+        -domain PD_RTC \
+        -lib_cells $lvl_lh_src_cell
+} else {
+    set_level_shifter PD_RTC_TO_TOP_LVL \
+        -domain PD_RTC \
+        -input_supply_set SS_RTC \
+        -output_supply_set SS_CORE \
+        -rule low_to_high \
+        -location self \
+        -elements $rtc2top_outputs
+    
+    map_level_shifter_cell PD_RTC_TO_TOP_LVL \
+        -domain PD_RTC \
+        -lib_cells $lvl_lh_src_cell
+}
+
+
+###################################################
+#ELS
+
+set_isolation PD_RTC_FROM_TOP_ELS_ISO0 \
+    -domain PD_RTC \
+    -isolation_supply_set SS_RTC \
+    -clamp_value 0 \
+    -isolation_signal u_xmw_rtc_top/top_els_nsleep \
+    -isolation_sense low \
+    -location self \
+    -source SS_CORE \
+    -sink SS_RTC \
+    -name_prefix top_iso0 \
+    -elements $top2rtc_inputs_iso0
+
+map_isolation_cell PD_RTC_FROM_TOP_ELS_ISO0 \
+    -domain PD_RTC \
+    -lib_cells $clamplo_elshl_sink_cell
+
+if {[info exist synopsys_program_name] && ( ${synopsys_program_name} == "dc_shell" || ${synopsys_program_name} == "pt_shell" ) } {
+    set_level_shifter PD_RTC_FROM_TOP_ELS_ISO0_LVL \
+        -domain PD_RTC \
+        -input_supply SS_CORE \
+        -output_supply SS_RTC \
+        -source SS_CORE \
+        -sink SS_RTC \
+        -rule high_to_low \
+        -location self \
+        -elements $top2rtc_inputs_iso0
+    
+    map_level_shifter_cell PD_RTC_FROM_TOP_ELS_ISO0_LVL \
+        -domain PD_RTC \
+        -lib_cells $clamplo_elshl_sink_cell
+} else {
+    set_level_shifter PD_RTC_FROM_TOP_ELS_ISO0_LVL \
+        -domain PD_RTC \
+        -input_supply_set SS_CORE \
+        -output_supply_set SS_RTC \
+        -source SS_CORE \
+        -sink SS_RTC \
+        -rule high_to_low \
+        -location self \
+        -elements $top2rtc_inputs_iso0
+    
+    map_level_shifter_cell PD_RTC_FROM_TOP_ELS_ISO0_LVL \
+        -domain PD_RTC \
+        -lib_cells $clamplo_elshl_sink_cell
+}
+
+###################################################
+
+#--------------------------------------------------------------------------------
+#power state
+#--------------------------------------------------------------------------------
+if {!$IS_BE} {
+    add_power_state SS_RTC -supply \
+        -state {SS_RTC_ON_0P8 -supply_expr {power == `{FULL_ON,0.8} && ground == `{FULL_ON,0.0} }} \
+        -state {SS_RTC_ON_0P7 -supply_expr {power == `{FULL_ON,0.7} && ground == `{FULL_ON,0.0} }} \
+        -state {SS_RTC_OFF    -supply_expr {power == `{OFF}         && ground == `{FULL_ON,0.0} }}
+    
+    add_power_state SS_AON -supply \
+        -state {SS_AON_ON_0P8 -supply_expr {power == `{FULL_ON,0.8} && ground == `{FULL_ON,0.0} }} \
+        -state {SS_AON_ON_0P7 -supply_expr {power == `{FULL_ON,0.7} && ground == `{FULL_ON,0.0} }} \
+        -state {SS_AON_OFF    -supply_expr {power == `{OFF}         && ground == `{FULL_ON,0.0} }}
+    
+    add_power_state SS_CORE -supply \
+        -state {SS_CORE_ON_0P8 -supply_expr {power == `{FULL_ON,0.8} && ground == `{FULL_ON,0.0} }} \
+        -state {SS_CORE_ON_0P7 -supply_expr {power == `{FULL_ON,0.7} && ground == `{FULL_ON,0.0} }} \
+        -state {SS_CORE_OFF    -supply_expr {power == `{OFF}         && ground == `{FULL_ON,0.0} }}
+    
+    add_power_state PD_RTC -domain \
+        -state {ALL_ON_0        -logic_expr { SS_RTC == SS_RTC_ON_0P8 && SS_AON == SS_AON_ON_0P8 && SS_CORE == SS_CORE_ON_0P8}} \
+        -state {ALL_ON_1        -logic_expr { SS_RTC == SS_RTC_ON_0P7 && SS_AON == SS_AON_ON_0P7 && SS_CORE == SS_CORE_ON_0P8}} \
+        -state {ALL_ON_2        -logic_expr { SS_RTC == SS_RTC_ON_0P7 && SS_AON == SS_AON_ON_0P7 && SS_CORE == SS_CORE_ON_0P7}} \
+        -state {CORE_OFF_0      -logic_expr { SS_RTC == SS_RTC_ON_0P8 && SS_AON == SS_AON_ON_0P8 && SS_CORE == SS_CORE_OFF}} \
+        -state {CORE_OFF_1      -logic_expr { SS_RTC == SS_RTC_ON_0P7 && SS_AON == SS_AON_ON_0P7 && SS_CORE == SS_CORE_OFF}} \
+        -state {AON_OFF_0       -logic_expr { SS_RTC == SS_RTC_ON_0P8 && SS_AON == SS_AON_OFF && SS_CORE == SS_CORE_OFF}} \
+        -state {AON_OFF_1       -logic_expr { SS_RTC == SS_RTC_ON_0P7 && SS_AON == SS_AON_OFF && SS_CORE == SS_CORE_OFF}} \
+        -state {ALL_OFF         -logic_expr { SS_RTC == SS_RTC_OFF && SS_AON == SS_AON_OFF && SS_CORE == SS_CORE_OFF}}
+}
+#    high to low lvl error
+
+#add_power_state PD_RTC -domain \
+#    -state {ALL_ON_0        -logic_expr { SS_RTC == SS_RTC_ON_0P8 && SS_AON == SS_AON_ON_0P8 && SS_CORE == SS_CORE_ON_0P8}} \
+#    -state {ALL_ON_2        -logic_expr { SS_RTC == SS_RTC_ON_0P7 && SS_AON == SS_AON_ON_0P7 && SS_CORE == SS_CORE_ON_0P7}} \
+#    -state {CORE_OFF_0      -logic_expr { SS_RTC == SS_RTC_ON_0P8 && SS_AON == SS_AON_ON_0P8 && SS_CORE == SS_CORE_OFF}} \
+#    -state {CORE_OFF_1      -logic_expr { SS_RTC == SS_RTC_ON_0P7 && SS_AON == SS_AON_ON_0P7 && SS_CORE == SS_CORE_OFF}} \
+#    -state {AON_OFF_0       -logic_expr { SS_RTC == SS_RTC_ON_0P8 && SS_AON == SS_AON_OFF && SS_CORE == SS_CORE_OFF}} \
+#    -state {AON_OFF_1       -logic_expr { SS_RTC == SS_RTC_ON_0P7 && SS_AON == SS_AON_OFF && SS_CORE == SS_CORE_OFF}}
+
+load_upf $PROJ_DIR/de/aon_sys/upf/xmw_rtc_pwr_wrap.macro.upf
+
+
+

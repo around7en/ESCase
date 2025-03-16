@@ -1,0 +1,388 @@
+#-------------------------------------------------------------------------------
+# Unified Power Format (IEEE Std 1801-2013)
+#-------------------------------------------------------------------------------
+upf_version 2.1
+
+if {![info exist PROJ_DIR]} {
+    set PROJ_DIR $env(PROJ_DIR)
+}
+set IS_CHIP 1
+if {![info exist IS_FLAT]} {
+    if {[info exist env(IS_FLAT)]} {
+        set IS_FLAT $env(IS_FLAT)
+    } else {
+        set IS_FLAT 0
+    }
+}
+set IO_TOP_HIER u_digital_top/u_io_top
+source $PROJ_DIR/de/common/upf/upf_setup.tcl
+#-------------------------------------------------------------------------------
+#common func
+#-------------------------------------------------------------------------------
+#remove elements in ls_sub from ls_main
+proc list_sub {ls_main ls_sub {prefix ""}} {
+    foreach ele $ls_sub {
+        set idx [lsearch $ls_main "${prefix}$ele"]
+        if {$idx != -1} {
+            set ls_main [lreplace $ls_main $idx $idx]
+        }
+    }
+    return $ls_main
+}
+
+#-------------------------------------------------------------------------------
+# Supply ports and nets
+#-------------------------------------------------------------------------------
+#VDD_RF18 si DCDC_GEN,VDD_VQPS is connect DCDC_GEN directly
+#   name            pmu_pin
+set powers {
+    VDD_CORE        "VDD_CORE3 VDD_CORE4"
+    VSS_CORE        "VSS_CORE3 VSS_CORE4"
+    VDD_RTC         VDD_RTC
+    VDD_AON         VDD_AON
+    VDD_AONIO       VDD_AONIO
+    VDD33A          VDD_USB33
+    GND33A          ""
+    VDD_IO          VDD_IO
+    VDD_SD          VDD_SD
+    VDD_SIM0        VDD_SIM0
+    VDD_SIM1        VDD_SIM1
+    VDD_RF18        VDD_RF18
+    VDD_RF12        VDD_RF12
+    VDD_DCXO        VDD_DCXO
+    VSS_LDO         ""
+    VDD_VQPS        ""
+    VSS_VQPS        ""
+    VSS_BOT         ""
+    VSS_IORIGHT     ""
+    VSS_IOTOP       ""
+}
+#    VDD_FEM
+#    VDD_ANA
+#    VSS_LDO         VSS_LDO
+#    VDD_VQPS        VDD_VQPS
+#    VSS_VQPS        VSS_VQPS
+#    VSS_RTC         VSS_RTC
+
+foreach {power_name pmu_pin} $powers {
+    #create power ports
+    #create_supply_port -direction inout $power_name
+    create_supply_port -direction in $power_name
+    
+    #create/connect supply_net
+    create_supply_net $power_name
+    connect_supply_net $power_name -ports $power_name
+
+    #connect to pmu pin
+    foreach pin_i $pmu_pin {
+        connect_supply_net $power_name -ports u_analog_top/$pin_i
+    }
+}
+
+create_supply_net VSS_CORE_TOP_MEM_SW
+
+#-------------------------------------------------------------------------------
+# Supply set 
+#-------------------------------------------------------------------------------
+#all digital power use VSS_CORE as ground reference
+#   ss_name                     vdd_name         vss_name                states
+set supply_sets {
+    SS_VDD_CORE                 VDD_CORE         VSS_CORE                "0.7 0.8 off"
+    SS_VDD_RTC                  VDD_RTC          VSS_CORE                "0.7 0.8"
+    SS_VDD_AON                  VDD_AON          VSS_CORE                "0.7 0.8 off"
+    SS_VDD_USB33                VDD33A           GND33A                  "3.3 off"
+    SS_VDD_AONIO                VDD_AONIO        VSS_BOT                 "1.8 off"
+    SS_VDD_IO                   VDD_IO           VSS_IORIGHT             "1.8 2.8 3.3 off"
+    SS_VDD_SD                   VDD_SD           VSS_IOTOP               "1.8 3.0 3.3 off"
+    SS_VDD_SIM0                 VDD_SIM0         VSS_IORIGHT             "1.8 3.0 off"
+    SS_VDD_SIM1                 VDD_SIM1         VSS_IORIGHT             "1.8 3.0 off"
+    SS_VDD_RF18_BOTTOM          VDD_RF18         VSS_BOT                 "1.8 off"
+    SS_VDD_RF18_RIGHT           VDD_RF18         VSS_IORIGHT             "1.8 off"
+    SS_VDD_RF18_TOP             VDD_RF18         VSS_IOTOP               "1.8 off"
+    SS_VDD_RF12                 VDD_RF12         VSS_LDO                 "1.2 off"
+    SS_VDD_DCXO                 VDD_DCXO         VSS_LDO                 "1.8 off"
+    SS_VDD_VQPS                 VDD_VQPS         VSS_VQPS                "1.8 off"
+}
+    #SS_VDD_CORE_TOP_MEM_SW      VDD_CORE         VSS_CORE_TOP_MEM_SW     "0.7 0.8 off"
+
+foreach {ss_name vdd_name vss_name states} $supply_sets {
+    #create
+    create_supply_set $ss_name          -function "power $vdd_name"            -function "ground $vss_name"
+    #add vdd vss map
+    #set vdd_vss_map($vdd_name) $vss_name
+    set ss_power_map($ss_name,vdd) $vdd_name
+    set ss_power_map($ss_name,vss) $vss_name
+    #power state
+    set cmd_tmp "add_power_state $ss_name -supply"
+    #add_power_state $ss_name -supply \
+    #    -state {OFF -supply_expr {power == `{OFF} && ground == `{FULL_ON,0.0} }}
+    foreach state $states {
+        if {$state != "off"} {
+            set state_name "ON_[string map {. P} $state]"
+            #add_power_state $ss_name -update \
+            #    -state $state_name "-supply_expr {power==`{FULL_ON,$state} && ground==`{FULL_ON,0.0} }" 
+            set cmd_tmp "$cmd_tmp -state {$state_name -supply_expr {power==`{FULL_ON,$state} && ground==`{FULL_ON,0.0} }}" 
+        } else {
+            set state_name "OFF"
+            #add_power_state $ss_name -update \
+            #    -state $state_name "-supply_expr {power==`{OFF} && ground==`{FULL_ON,0.0} }" 
+            set cmd_tmp "$cmd_tmp -state {$state_name -supply_expr {power==`{OFF} && ground==`{FULL_ON,0.0} }}" 
+        }
+    }
+    eval $cmd_tmp
+}
+
+#for SS_VDD_CORE_TOP_MEM_SW,psw is in ground for memory
+create_supply_set SS_VDD_CORE_TOP_MEM_SW          -function "power VDD_CORE"            -function "ground VSS_CORE_TOP_MEM_SW"
+add_power_state SS_VDD_CORE_TOP_MEM_SW -supply \
+    -state {ON_0P8  -supply_expr {power == `{FULL_ON,0.8} && ground == `{FULL_ON,0.0} }} \
+    -state {OFF_0P8 -supply_expr {power == `{FULL_ON,0.8} && ground == `{OFF}         }} \
+    -state {OFF_0P7 -supply_expr {power == `{FULL_ON,0.7} && ground == `{OFF}         }} \
+    -state {OFF     -supply_expr {power == `{OFF}         && ground == `{OFF}         }}
+
+set ss_power_map(SS_VDD_CORE_TOP_MEM_SW,vdd) VDD_CORE
+set ss_power_map(SS_VDD_CORE_TOP_MEM_SW,vss) VSS_CORE_TOP_MEM_SW
+
+#-------------------------------------------------------------------------------
+# Power Domains
+#-------------------------------------------------------------------------------
+create_power_domain PD_PROJ_TOP -elements {.}  -supply "primary SS_VDD_CORE" -exclude_elements \
+                    "u_digital_top/u_ap_sys_pwr_wrap \
+                     u_digital_top/u_cpu_sys_pwr_wrap \
+                     u_digital_top/u_cp_sys_pwr_wrap \
+                     u_digital_top/u_pub_sys_pwr_wrap \
+                    " 
+
+                     #u_digital_top/u_aon_sys_pwr_wrap \
+                     #u_digital_top/u_xmw_rtc_pwr_wrap \
+#-------------------------------------------------------------------------------
+# Port Attributes
+#-------------------------------------------------------------------------------
+set_port_attributes -ports {USB2_DM USB2_DP} -receiver_supply SS_VDD_USB33 -driver_supply SS_VDD_USB33
+set_port_attributes -ports {AONINT0 AONINT1 AONINT2} -receiver_supply SS_VDD_AONIO -driver_supply SS_VDD_AONIO
+
+#GPIO power
+set SS_DCDC_GEN_BOTTOM       SS_VDD_RF18_BOTTOM
+set SS_DCDC_GEN_RIGHT        SS_VDD_RF18_RIGHT
+set SS_DCDC_GEN_TOP          SS_VDD_RF18_TOP
+set SS_VDD_IO_RIGHT          SS_VDD_IO
+set SS_VDD_SD_TOP            SS_VDD_SD
+set SS_VDD_SIM0_RIGHT        SS_VDD_SIM0
+set SS_VDD_SIM1_RIGHT        SS_VDD_SIM1
+source $PROJ_DIR/de/top/upf/io_top.macro.upf
+
+#-------------------------------------------------------------------------------
+# Power Switches
+#-------------------------------------------------------------------------------
+
+#--------------------------------------------------------------------------------
+#subsys
+#--------------------------------------------------------------------------------
+#----------------------
+#aon/rtc sys
+#----------------------
+if {$IS_FLAT} {
+    load_upf -scope u_digital_top/u_aon_sys_pwr_wrap $PROJ_DIR/de/aon_sys/upf/aon_sys_pwr_wrap.upf
+    load_upf -scope u_digital_top/u_xmw_rtc_pwr_wrap $PROJ_DIR/de/aon_sys/upf/xmw_rtc_pwr_wrap.upf
+} else {
+}
+
+#connect power pin
+connect_supply_net $ss_power_map(SS_VDD_AON,vdd)      -ports u_digital_top/u_aon_sys_pwr_wrap/VDD_AON 
+#connect_supply_net $ss_power_map(SS_VDD_AON,vss)      -ports u_digital_top/u_aon_sys_pwr_wrap/VSS_AON 
+connect_supply_net $ss_power_map(SS_VDD_CORE,vdd)     -ports u_digital_top/u_aon_sys_pwr_wrap/VDD_CORE 
+connect_supply_net $ss_power_map(SS_VDD_CORE,vss)     -ports u_digital_top/u_aon_sys_pwr_wrap/VSS_CORE 
+connect_supply_net $ss_power_map(SS_VDD_AONIO,vdd)    -ports u_digital_top/u_aon_sys_pwr_wrap/VDD_AONIO 
+connect_supply_net $ss_power_map(SS_VDD_AONIO,vss)    -ports u_digital_top/u_aon_sys_pwr_wrap/VSS_AONIO 
+#connect_supply_net $ss_power_map(SS_VDD_RTC,vss)      -ports u_digital_top/u_aon_sys_pwr_wrap/VSS_RTC 
+
+connect_supply_net $ss_power_map(SS_VDD_RTC,vdd)      -ports u_digital_top/u_xmw_rtc_pwr_wrap/VDD_RTC 
+#connect_supply_net $ss_power_map(SS_VDD_RTC,vss)      -ports u_digital_top/u_xmw_rtc_pwr_wrap/VSS_RTC 
+connect_supply_net $ss_power_map(SS_VDD_AON,vdd)      -ports u_digital_top/u_xmw_rtc_pwr_wrap/VDD_AON 
+#connect_supply_net $ss_power_map(SS_VDD_AON,vss)      -ports u_digital_top/u_xmw_rtc_pwr_wrap/VSS_AON 
+connect_supply_net $ss_power_map(SS_VDD_CORE,vdd)     -ports u_digital_top/u_xmw_rtc_pwr_wrap/VDD_CORE 
+connect_supply_net $ss_power_map(SS_VDD_CORE,vss)     -ports u_digital_top/u_xmw_rtc_pwr_wrap/VSS_CORE 
+
+#----------------------
+#cpu/apsys/pub/cp sys
+#----------------------
+#   sys_name       iso_en           upf_sub             no_iso_ls           iso1_ls            vdd_sw
+set sub_sys_msgs {
+    cpu_sys        cpu_iso_en       cpu_sys_list.upf    cpu_sys_no_iso      cpu_sys_isohi      VDD_CORE_CPUSYS_SW
+    ap_sys         ap_iso_en        ap_sys_list.upf     ap_sys_no_iso       ap_sys_isohi       VDD_CORE_APSYS_SW
+    pub_sys        pub_iso_en       pub_sys_list.upf    pub_sys_no_iso      pub_sys_isohi      VDD_CORE_PUBSYS_SW
+    cp_sys         cp_iso_en        cp_sys_list.upf     cp_sys_no_iso       cp_sys_isohi       VDD_CORE_CPSYS_SW
+}
+#subsys
+foreach {sys_name iso_en upf_sub no_iso_ls iso1_ls vdd_sw} $sub_sys_msgs {
+    set sys_md_name ${sys_name}_pwr_wrap
+    set sys_hier_ful u_digital_top/u_${sys_md_name}
+    set upf_main_dir $PROJ_DIR/de/$sys_name/upf/${sys_md_name}.upf
+    set upf_sub_dir $PROJ_DIR/de/$sys_name/upf/$upf_sub
+    set iso_en_hier u_digital_top/u_top_pmu/u_top_pmu_dft/u_${iso_en}/cmind_uj_cell/Z
+
+    #load sub sys upf
+    if {$IS_FLAT} {
+        load_upf -scope $sys_hier_ful $upf_main_dir
+    } else {
+        #
+        create_supply_net $vdd_sw
+        connect_supply_net $vdd_sw -ports $sys_hier_ful/$vdd_sw 
+        create_supply_set SS_$vdd_sw          -function "power $vdd_sw"            -function "ground VSS_CORE"
+        add_power_state SS_$vdd_sw -supply \
+            -state {ON_0P8 -supply_expr {power==`{FULL_ON,0.8} && ground==`{FULL_ON,0.0} }} \
+            -state {OFF    -supply_expr {power==`{OFF}         && ground==`{FULL_ON,0.0} }}
+        create_power_domain pd_$sys_name  -elements $sys_hier_ful  -supply "primary SS_$vdd_sw"
+    }
+
+    #connect power pin
+    connect_supply_net $ss_power_map(SS_VDD_CORE,vdd) -ports $sys_hier_ful/VDD_CORE 
+    connect_supply_net $ss_power_map(SS_VDD_CORE,vss) -ports $sys_hier_ful/VSS 
+
+    #element list
+    source $upf_sub_dir
+    set sys_no_iso_ls [set $no_iso_ls]
+    set sys_iso1_ls [set $iso1_ls]
+    set sys_outs [find_objects $sys_hier_ful -pattern * -object_type port -direction out]
+    #set sys_iso1_with_hier $sys_iso1_ls
+    set sys_noiso_with_hier ""
+    foreach signal $sys_no_iso_ls {
+        lappend sys_noiso_with_hier "$sys_hier_ful/$signal"
+    }
+    set sys_iso1_with_hier ""
+    foreach signal $sys_iso1_ls {
+        lappend sys_iso1_with_hier "$sys_hier_ful/$signal"
+    }
+    #puts "$sys_name,sys_iso0_ls:$sys_iso0_ls"
+    #set sys_iso0_ls [list_sub $sys_outs "$sys_no_iso_ls $sys_iso1_ls" "$sys_hier_ful"]
+    if {[info exist synopsys_program_name] && ${synopsys_program_name} == "dc_shell"} {
+        #iso0
+        set_isolation ${sys_md_name}_iso0 \
+            -domain PD_PROJ_TOP \
+            -isolation_supply_set SS_VDD_CORE \
+            -clamp_value 0 \
+            -isolation_signal $iso_en_hier \
+            -isolation_sense high \
+            -location self \
+            -applies_to inputs \
+            -name_prefix ${sys_name}_ \
+            -applies_to_boundary lower \
+            -exclude_elements "$sys_noiso_with_hier $sys_iso1_with_hier" \
+            -elements $sys_outs
+        map_isolation_cell ${sys_md_name}_iso0 \
+            -domain PD_PROJ_TOP \
+            -lib_cells $clamplo_iso_sink_cell
+        
+        #iso1
+        set_isolation ${sys_md_name}_iso1 \
+            -domain PD_PROJ_TOP \
+            -isolation_supply_set SS_VDD_CORE \
+            -clamp_value 1 \
+            -isolation_signal $iso_en_hier \
+            -isolation_sense high \
+            -location self \
+            -applies_to inputs \
+            -applies_to_boundary lower \
+            -name_prefix ${sys_name}_ \
+            -elements $sys_iso1_with_hier
+        map_isolation_cell ${sys_md_name}_iso1 \
+            -domain PD_PROJ_TOP \
+            -lib_cells $clamphi_iso_sink_cell
+    } else {
+        #iso0
+        set_isolation ${sys_md_name}_iso0 \
+            -domain PD_PROJ_TOP \
+            -isolation_supply_set SS_VDD_CORE \
+            -clamp_value 0 \
+            -isolation_signal $iso_en_hier \
+            -isolation_sense high \
+            -location self \
+            -applies_to inputs \
+            -name_prefix ${sys_name}_ \
+            -exclude_elements "$sys_noiso_with_hier $sys_iso1_with_hier" \
+            -elements $sys_outs
+        map_isolation_cell ${sys_md_name}_iso0 \
+            -domain PD_PROJ_TOP \
+            -lib_cells $clamplo_iso_sink_cell
+        
+        #iso1
+        set_isolation ${sys_md_name}_iso1 \
+            -domain PD_PROJ_TOP \
+            -isolation_supply_set SS_VDD_CORE \
+            -clamp_value 1 \
+            -isolation_signal $iso_en_hier \
+            -isolation_sense high \
+            -location self \
+            -applies_to inputs \
+            -name_prefix ${sys_name}_ \
+            -elements $sys_iso1_with_hier
+        map_isolation_cell ${sys_md_name}_iso1 \
+            -domain PD_PROJ_TOP \
+            -lib_cells $clamphi_iso_sink_cell
+    }
+
+}
+
+connect_supply_net $ss_power_map(SS_VDD_USB33,vdd)   -ports u_digital_top/u_ap_sys_pwr_wrap/VDD_USB33
+connect_supply_net $ss_power_map(SS_VDD_USB33,vss)   -ports u_digital_top/u_ap_sys_pwr_wrap/VSS_USB33
+
+#--------------------------------------------------------------------------------
+#power state
+#--------------------------------------------------------------------------------
+if {!$IS_FLAT} {
+    set cpu_ss_name SS_VDD_CORE_CPUSYS_SW
+    set ap_ss_name  SS_VDD_CORE_APSYS_SW 
+    set cp_ss_name  SS_VDD_CORE_CPSYS_SW 
+    set pub_ss_name SS_VDD_CORE_PUBSYS_SW
+} else {
+    set cpu_ss_name u_digital_top/u_cpu_sys_pwr_wrap/SS_PDCPUSYS_SW
+    set ap_ss_name  u_digital_top/u_ap_sys_pwr_wrap/SS_PDAPSYS_SW 
+    set cp_ss_name  u_digital_top/u_cp_sys_pwr_wrap/SS_PDCPSYS_SW 
+    set pub_ss_name u_digital_top/u_pub_sys_pwr_wrap/SS_PDPUBSYS_SW
+}
+set state_names "
+                            PowerOff   UltraPSM   PSM      PSM_0P8  DeepSleep   LightSleep   SYSRamOn     APOn      APOn_USBOff  CPOn      PUBOn     AllOn
+"                                                                                                                   
+set power_states "                                                                                                                            
+    SS_VDD_RTC              ON_0P7     ON_0P7     ON_0P7   ON_0P8   ON_0P7      ON_0P7       ON_0P8       ON_0P8    ON_0P8       ON_0P8    ON_0P8    ON_0P8    
+    SS_VDD_AON              OFF        ON_0P7     ON_0P7   ON_0P8   ON_0P7      ON_0P7       ON_0P8       ON_0P8    ON_0P8       ON_0P8    ON_0P8    ON_0P8    
+    SS_VDD_AONIO            OFF        OFF        ON_1P8   ON_1P8   ON_1P8      ON_1P8       ON_1P8       ON_1P8    ON_1P8       ON_1P8    ON_1P8    ON_1P8    
+    SS_VDD_CORE             OFF        OFF        OFF      OFF      ON_0P7      ON_0P8       ON_0P8       ON_0P8    ON_0P8       ON_0P8    ON_0P8    ON_0P8    
+    SS_VDD_CORE_TOP_MEM_SW  OFF        OFF        OFF      OFF      OFF_0P7     OFF_0P8      ON_0P8       OFF_0P8   OFF_0P8      OFF_0P8   OFF_0P8   ON_0P8    
+    $cpu_ss_name            OFF        OFF        OFF      OFF      OFF         ON_0P8       OFF          OFF       OFF          OFF       OFF       ON_0P8    
+    $ap_ss_name             OFF        OFF        OFF      OFF      OFF         OFF          OFF          ON_0P8    ON_0P8       OFF       OFF       ON_0P8    
+    $cp_ss_name             OFF        OFF        OFF      OFF      OFF         OFF          OFF          OFF       OFF          ON_0P8    OFF       ON_0P8    
+    $pub_ss_name            OFF        OFF        OFF      OFF      OFF         OFF          OFF          OFF       OFF          OFF       ON_0P8    ON_0P8    
+    SS_VDD_USB33            OFF        OFF        OFF      OFF      OFF         OFF          OFF          ON_3P3    OFF          OFF       OFF       ON_3P3       
+    SS_VDD_IO               OFF        OFF        OFF      OFF      OFF         ON_1P8       ON_2P8       ON_3P3    ON_3P3       ON_3P3    ON_3P3    ON_3P3      
+    SS_VDD_SD               OFF        OFF        OFF      OFF      OFF         ON_1P8       ON_3P0       ON_3P3    ON_3P3       ON_1P8    ON_1P8    ON_1P8    
+    SS_VDD_SIM0             OFF        OFF        OFF      OFF      OFF         ON_1P8       ON_1P8       ON_1P8    ON_1P8       ON_1P8    ON_3P0    ON_1P8    
+    SS_VDD_SIM1             OFF        OFF        OFF      OFF      OFF         ON_1P8       ON_1P8       ON_1P8    ON_1P8       ON_3P0    ON_1P8    ON_1P8    
+    SS_VDD_RF18_BOTTOM      OFF        OFF        OFF      OFF      OFF         ON_1P8       ON_1P8       ON_1P8    ON_1P8       ON_1P8    ON_1P8    ON_1P8       
+    SS_VDD_RF18_RIGHT       OFF        OFF        OFF      OFF      OFF         ON_1P8       ON_1P8       ON_1P8    ON_1P8       ON_1P8    ON_1P8    ON_1P8       
+    SS_VDD_RF18_TOP         OFF        OFF        OFF      OFF      OFF         ON_1P8       ON_1P8       ON_1P8    ON_1P8       ON_1P8    ON_1P8    ON_1P8       
+    SS_VDD_RF12             OFF        OFF        OFF      OFF      OFF         ON_1P2       ON_1P2       ON_1P2    ON_1P2       ON_1P2    ON_1P2    ON_1P2       
+    SS_VDD_DCXO             OFF        OFF        OFF      OFF      ON_1P8      ON_1P8       ON_1P8       ON_1P8    ON_1P8       ON_1P8    ON_1P8    ON_1P8       
+    SS_VDD_VQPS             OFF        OFF        OFF      OFF      OFF         ON_1P8       ON_1P8       ON_1P8    ON_1P8       ON_1P8    ON_1P8    ON_1P8
+"                                                                                                          
+if {$IS_FLAT} {                                                                                            
+set power_states "$power_states                                                                                                                           
+    u_digital_top/u_cpu_sys_pwr_wrap/SS_MEM_CPUSYS_SW                                                      
+                            OFF        OFF        OFF      OFF      OFF_0P7     ON_0P8       ON_0P8       OFF_0P8   OFF_0P8      OFF_0P8   OFF_0P8   ON_0P8    
+"
+}
+set cmd_tmp "add_power_state PD_PROJ_TOP -domain"
+foreach state_name $state_names {
+    set cond_ls ""
+    foreach "ss_name $state_names" $power_states {
+        lappend cond_ls "$ss_name==[set $state_name]"
+    }
+    set cmd_tmp "$cmd_tmp -state {$state_name -logic_expr {[join $cond_ls { && }]}}"
+}
+eval $cmd_tmp
+
+#--------------------------------------------------------------------------------
+#macro power connect
+#--------------------------------------------------------------------------------
+source $PROJ_DIR/de/top/upf/proj_top.macro.upf
+

@@ -1,0 +1,123 @@
+
+#-------------------------------------------------------------------------------
+# Unified Power Format (IEEE Std 1801-2013)
+#-------------------------------------------------------------------------------
+
+upf_version 2.1
+
+set PROJ_DIR $env(PROJ_DIR)
+if {![info exist IS_FLAT]} {
+    set IS_FLAT 0
+}
+load_upf $PROJ_DIR/de/common/upf/upf_setup.tcl
+#-------------------------------------------------------------------------------
+# Supply ports and nets
+#-------------------------------------------------------------------------------
+
+create_supply_port -direction in VDD_USB33
+create_supply_port -direction in VSS_USB33
+
+create_supply_net VDD_USB33
+create_supply_net VSS_USB33
+
+connect_supply_net  VDD_USB33 -ports VDD_USB33
+connect_supply_net  VSS_USB33 -ports VSS_USB33 
+
+
+create_supply_port -direction in VDD_CORE
+create_supply_port -direction in VSS
+
+create_supply_net VDD_CORE
+create_supply_net VSS
+
+connect_supply_net VDD_CORE -ports VDD_CORE
+connect_supply_net VSS -ports VSS
+
+create_supply_net VDD_CORE_APSYS_SW    -resolve parallel
+
+#-------------------------------------------------------------------------------
+# Supply set 
+#-------------------------------------------------------------------------------
+
+create_supply_set SS_PDUSB33          -function {power  VDD_USB33}            -function {ground  VSS_USB33}
+
+create_supply_set SS_PDTOP          -function {power VDD_CORE}            -function {ground VSS}
+
+create_supply_set SS_PDAPSYS_SW    -function {power VDD_CORE_APSYS_SW}  -function {ground VSS}
+
+
+#-------------------------------------------------------------------------------
+# Power Domains
+#-------------------------------------------------------------------------------
+
+create_power_domain PDAPSYS_SW   -include_scope  -supply {primary SS_PDAPSYS_SW} 
+
+#-------------------------------------------------------------------------------
+# Port Attributes
+#-------------------------------------------------------------------------------
+set aon_inputs [list \
+        apsys_shutdown_n \
+        phy_ponrst \
+]
+
+set aon_outputs [list \
+        apsys_shutdown_ack_n \
+]
+
+set usb_inouts [list \
+        DP \
+        DM \
+]
+
+if {!$IS_FLAT} {
+    set_port_attributes -elements {.} -applies_to inputs  -exclude_ports $usb_inouts -driver_supply SS_PDTOP
+    set_port_attributes -elements {.} -applies_to outputs -exclude_ports "$aon_outputs $usb_inouts" -driver_supply SS_PDAPSYS_SW -receiver_supply SS_PDAPSYS_SW
+    set_port_attributes -ports $aon_outputs -driver_supply SS_PDTOP -receiver_supply SS_PDTOP 
+    set_port_attributes -ports $usb_inouts -driver_supply  SS_PDUSB33 -receiver_supply SS_PDUSB33
+}
+#-------------------------------------------------------------------------------
+# Power Switches
+#-------------------------------------------------------------------------------
+create_power_switch  PSW_APSYS \
+    -input_supply_port  { TVDD      VDD_CORE} \
+    -output_supply_port { VDD       VDD_CORE_APSYS_SW} \
+    -control_port       { NSLEEPIN  apsys_shutdown_n} \
+    -ack_port           { NSLEEPOUT apsys_shutdown_ack_n 1} \
+    -on_state           { on_state  TVDD { NSLEEPIN} } \
+    -off_state          { off_state {~NSLEEPIN} }\
+    -domain             PDAPSYS_SW
+
+map_power_switch   PSW_APSYS \
+    -domain PDAPSYS_SW \
+    -lib_cells $psw_single_header_cell 
+#--------------------------------------------------------------------------------
+#power state
+#--------------------------------------------------------------------------------
+
+add_power_state SS_PDUSB33  -supply \
+    -state {ON_3P3 -supply_expr {power == `{FULL_ON,3.3} && ground == `{FULL_ON,0.0} }} \
+    -state {OFF -supply_expr {power == `{OFF}         && ground == `{FULL_ON,0.0} }}
+
+add_power_state SS_PDTOP -supply \
+    -state  {ON_0P8 -supply_expr {power == `{FULL_ON,0.8} && ground == `{FULL_ON,0.0} }} \
+    -state  {ON_0P7 -supply_expr {power == `{FULL_ON,0.7} && ground == `{FULL_ON,0.0} }} \
+    -state  {OFF    -supply_expr {power == `{OFF}         && ground == `{FULL_ON,0.0} }}
+
+add_power_state SS_PDAPSYS_SW -supply \
+    -state  {ON_0P8 -supply_expr {power == `{FULL_ON,0.8} && ground == `{FULL_ON,0.0} }} \
+    -state  {OFF    -supply_expr {power == `{OFF}         && ground == `{FULL_ON,0.0} }}
+
+add_power_state PDAPSYS_SW -domain \
+    -state {ALL_ON         -logic_expr { SS_PDTOP == ON_0P8 && SS_PDAPSYS_SW == ON_0P8  && SS_PDUSB33 == ON_3P3 }} \
+    -state {AP_ON_USB_OFF  -logic_expr { SS_PDTOP == ON_0P8 && SS_PDAPSYS_SW == ON_0P8 && SS_PDUSB33 == OFF }} \
+    -state {ALL_OFF        -logic_expr { SS_PDTOP == OFF    && SS_PDAPSYS_SW == OFF && SS_PDUSB33 == OFF }} \
+    -state {TOP_LP_AP_OFF  -logic_expr { SS_PDTOP == ON_0P7 && SS_PDAPSYS_SW == OFF && SS_PDUSB33 == OFF }} \
+    -state {TOP_ON_AP_OFF  -logic_expr { SS_PDTOP == ON_0P8 && SS_PDAPSYS_SW == OFF && SS_PDUSB33 == OFF }}
+
+#--------------------------------------------------------------------------------
+#memory power connect
+#--------------------------------------------------------------------------------
+load_upf $PROJ_DIR/de/ap_sys/upf/ap_sys_pwr_wrap.macro.upf
+if {[info exist CLP_CHK]} {
+load_upf $PROJ_DIR/de/ap_sys/upf/ap_sys_pwr_wrap.rampd_connect.upf
+}

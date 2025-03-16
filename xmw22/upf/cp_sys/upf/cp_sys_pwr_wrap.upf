@@ -1,0 +1,93 @@
+
+#-------------------------------------------------------------------------------
+# Unified Power Format (IEEE Std 1801-2013)
+#-------------------------------------------------------------------------------
+
+upf_version 2.1
+
+set PROJ_DIR $env(PROJ_DIR)
+if {![info exist IS_FLAT]} {
+    set IS_FLAT 0
+}
+load_upf $PROJ_DIR/de/common/upf/upf_setup.tcl
+#-------------------------------------------------------------------------------
+# Supply ports and nets
+#-------------------------------------------------------------------------------
+
+create_supply_port -direction in VDD_CORE
+create_supply_port -direction in VSS
+
+create_supply_net VDD_CORE
+create_supply_net VSS
+
+connect_supply_net VDD_CORE -ports VDD_CORE
+connect_supply_net VSS -ports VSS
+
+create_supply_net VDD_CORE_CPSYS_SW    -resolve parallel
+
+#-------------------------------------------------------------------------------
+# Supply set 
+#-------------------------------------------------------------------------------
+
+create_supply_set SS_PDTOP          -function {power VDD_CORE}            -function {ground VSS}
+
+create_supply_set SS_PDCPSYS_SW     -function {power VDD_CORE_CPSYS_SW}  -function {ground VSS}
+
+#-------------------------------------------------------------------------------
+# Power Domains
+#-------------------------------------------------------------------------------
+
+create_power_domain PDCPSYS_SW   -include_scope  -supply {primary SS_PDCPSYS_SW} 
+
+#-------------------------------------------------------------------------------
+# Port Attributes
+#-------------------------------------------------------------------------------
+set aon_inputs [list \
+        cp_shutdown_n \
+        cp_sys_root_clk_en \
+]
+set aon_outputs [list \
+        cp_shutdown_ack_n \
+]
+
+if {!$IS_FLAT} {
+    set_port_attributes -elements {.} -applies_to inputs  -exclude_ports $aon_inputs -driver_supply SS_PDTOP
+    set_port_attributes -elements {.} -applies_to outputs -exclude_ports $aon_outputs -receiver_supply SS_PDCPSYS_SW
+    set_port_attributes -ports $aon_inputs  -driver_supply SS_PDTOP
+    set_port_attributes -ports $aon_outputs -receiver_supply SS_PDTOP
+}
+#-------------------------------------------------------------------------------
+# Power Switches
+#-------------------------------------------------------------------------------
+create_power_switch  PSW_CPSYS \
+    -input_supply_port  { TVDD      VDD_CORE} \
+    -output_supply_port { VDD       VDD_CORE_CPSYS_SW} \
+    -control_port       { NSLEEPIN  cp_shutdown_n} \
+    -ack_port           { NSLEEPOUT cp_shutdown_ack_n 1} \
+    -on_state           { on_state  TVDD { NSLEEPIN} } \
+    -off_state          { off_state {~NSLEEPIN} }\
+    -domain             PDCPSYS_SW
+
+map_power_switch   PSW_CPSYS \
+    -domain PDCPSYS_SW \
+    -lib_cells $psw_single_header_cell 
+#--------------------------------------------------------------------------------
+#power state
+#--------------------------------------------------------------------------------
+add_power_state SS_PDTOP -supply \
+    -state {ON_0P8 -supply_expr {power == `{FULL_ON,0.8} && ground == `{FULL_ON,0.0} }} \
+    -state {ON_0P7 -supply_expr {power == `{FULL_ON,0.7} && ground == `{FULL_ON,0.0} }} \
+    -state {OFF    -supply_expr {power == `{OFF}         && ground == `{FULL_ON,0.0} }}
+
+add_power_state SS_PDCPSYS_SW -supply \
+    -state {ON_0P8 -supply_expr {power == `{FULL_ON,0.8} && ground == `{FULL_ON,0.0} }} \
+    -state {OFF    -supply_expr {power == `{OFF}         && ground == `{FULL_ON,0.0} }}
+
+add_power_state PDCPSYS_SW -domain \
+    -state {ALL_ON          -logic_expr { SS_PDTOP == ON_0P8 && SS_PDCPSYS_SW == ON_0P8 }} \
+    -state {ALL_OFF         -logic_expr { SS_PDTOP == OFF    && SS_PDCPSYS_SW == OFF    }} \
+    -state {TOP_LP_CP_OFF   -logic_expr { SS_PDTOP == ON_0P7 && SS_PDCPSYS_SW == OFF    }} \
+    -state {TOP_ON_CP_OFF   -logic_expr { SS_PDTOP == ON_0P8 && SS_PDCPSYS_SW == OFF    }}
+
+#--------------------------------------------------------------------------------
+load_upf $PROJ_DIR/de/cp_sys/upf/cp_sys_pwr_wrap.macro.upf

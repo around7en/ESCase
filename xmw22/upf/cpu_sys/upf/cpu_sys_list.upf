@@ -1,0 +1,27 @@
+set cpu_sys_no_iso [ list \
+    cpusys_shutdown_ack_n \
+    cpusys_ram_sd_ack \
+]
+
+set cpu_sys_isohi [ list \
+    cpusys_deep_sleep_req \
+    top2cpu_HREADYOUTS \
+    ap2cpu_HREADYOUTS  \
+    cp2cpu_HREADYOUTS \
+    cpusys_dummy_out[31] \
+    cpusys_dummy_out[30] \
+    cpusys_dummy_out[29] \
+    cpusys_dummy_out[28] \
+    cpusys_dummy_out[27] \
+    cpusys_dummy_out[26] \
+    cpusys_dummy_out[25] \
+    cpusys_dummy_out[24] \
+    cpusys_dummy_out[23] \
+    cpusys_dummy_out[22] \
+    cpusys_dummy_out[21] \
+    cpusys_dummy_out[20] \
+    cpusys_dummy_out[19] \
+    cpusys_dummy_out[18] \
+    cpusys_dummy_out[17] \
+    cpusys_dummy_out[16] \
+]

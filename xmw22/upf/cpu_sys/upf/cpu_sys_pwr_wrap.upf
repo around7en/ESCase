@@ -1,0 +1,119 @@
+
+#-------------------------------------------------------------------------------
+# Unified Power Format (IEEE Std 1801-2013)
+#-------------------------------------------------------------------------------
+
+upf_version 2.1
+
+set PROJ_DIR $env(PROJ_DIR)
+if {![info exist IS_FLAT]} {
+    set IS_FLAT 0
+}
+
+load_upf $PROJ_DIR/de/common/upf/upf_setup.tcl
+#-------------------------------------------------------------------------------
+# Supply ports and nets
+#-------------------------------------------------------------------------------
+
+create_supply_port -direction in VDD_CORE
+create_supply_port -direction in VSS
+
+create_supply_net VDD_CORE
+create_supply_net VSS
+
+connect_supply_net VDD_CORE -ports VDD_CORE
+connect_supply_net VSS -ports VSS
+
+create_supply_net VDD_CORE_CPUSYS_SW    -resolve parallel
+create_supply_net VSS_MEM_CPUSYS_SW     -resolve parallel
+
+#-------------------------------------------------------------------------------
+# Supply set 
+#-------------------------------------------------------------------------------
+
+create_supply_set SS_PDTOP          -function {power VDD_CORE}            -function {ground VSS}
+
+create_supply_set SS_PDCPUSYS_SW    -function {power VDD_CORE_CPUSYS_SW}  -function {ground VSS}
+
+create_supply_set SS_MEM_CPUSYS_SW  -function {power VDD_CORE}            -function {ground VSS_MEM_CPUSYS_SW}
+
+#-------------------------------------------------------------------------------
+# Power Domains
+#-------------------------------------------------------------------------------
+
+create_power_domain PDCPUSYS_SW   -include_scope  -supply {primary SS_PDCPUSYS_SW} 
+
+#-------------------------------------------------------------------------------
+# Port Attributes
+#-------------------------------------------------------------------------------
+set aon_inputs [list \
+        cpusys_shutdown_n \
+        cpusys_ram_slp_n \
+        cpusys_ram_dslp_n \
+        cpusys_ram_sd \
+        cpusys_rom_slp \
+]
+set aon_outputs [list \
+        cpusys_shutdown_ack_n \
+        cpusys_ram_sd_ack \
+]
+
+if {!$IS_FLAT} {
+    set_port_attributes -elements {.} -applies_to inputs  -exclude_ports $aon_inputs -driver_supply SS_PDTOP
+    set_port_attributes -elements {.} -applies_to outputs -exclude_ports $aon_outputs -receiver_supply SS_PDCPUSYS_SW
+    set_port_attributes -ports $aon_inputs -driver_supply SS_PDTOP
+    set_port_attributes -ports $aon_outputs -receiver_supply SS_PDTOP
+}
+#-------------------------------------------------------------------------------
+# Power Switches
+#-------------------------------------------------------------------------------
+create_power_switch  PSW_CPUSYS \
+    -input_supply_port  { TVDD      VDD_CORE} \
+    -output_supply_port { VDD       VDD_CORE_CPUSYS_SW} \
+    -control_port       { NSLEEPIN  cpusys_shutdown_n} \
+    -ack_port           { NSLEEPOUT cpusys_shutdown_ack_n 1} \
+    -on_state           { on_state  TVDD { NSLEEPIN} } \
+    -off_state          { off_state {~NSLEEPIN} }\
+    -domain             PDCPUSYS_SW
+
+map_power_switch   PSW_CPUSYS \
+    -domain PDCPUSYS_SW \
+    -lib_cells $psw_single_header_cell 
+#--------------------------------------------------------------------------------
+#power state
+#--------------------------------------------------------------------------------
+add_power_state SS_PDTOP -supply \
+    -state {ON_0P8 -supply_expr {power == `{FULL_ON,0.8} && ground == `{FULL_ON,0.0} }} \
+    -state {ON_0P7 -supply_expr {power == `{FULL_ON,0.7} && ground == `{FULL_ON,0.0} }} \
+    -state {OFF    -supply_expr {power == `{OFF}         && ground == `{FULL_ON,0.0} }}
+
+add_power_state SS_PDCPUSYS_SW -supply \
+    -state {ON_0P8 -supply_expr {power == `{FULL_ON,0.8} && ground == `{FULL_ON,0.0} }} \
+    -state {OFF    -supply_expr {power == `{OFF}         && ground == `{FULL_ON,0.0} }}
+
+add_power_state SS_MEM_CPUSYS_SW -supply \
+    -state {ON_0P8  -supply_expr {power == `{FULL_ON,0.8} && ground == `{FULL_ON,0.0} }} \
+    -state {OFF_0P8 -supply_expr {power == `{FULL_ON,0.8} && ground == `{OFF}         }} \
+    -state {OFF_0P7 -supply_expr {power == `{FULL_ON,0.7} && ground == `{OFF}         }} \
+    -state {OFF     -supply_expr {power == `{OFF}         && ground == `{OFF}         }}
+
+add_power_state PDCPUSYS_SW -domain \
+    -state {ALL_ON          -logic_expr { SS_PDTOP == ON_0P8 && SS_PDCPUSYS_SW == ON_0P8 && SS_MEM_CPUSYS_SW == ON_0P8  }} \
+    -state {ALL_OFF         -logic_expr { SS_PDTOP == OFF    && SS_PDCPUSYS_SW == OFF    && SS_MEM_CPUSYS_SW == OFF     }} \
+    -state {TOP_LP_CPU_OFF  -logic_expr { SS_PDTOP == ON_0P7 && SS_PDCPUSYS_SW == OFF    && SS_MEM_CPUSYS_SW == OFF_0P7 }} \
+    -state {TOP_ON_CPU_OFF  -logic_expr { SS_PDTOP == ON_0P8 && SS_PDCPUSYS_SW == OFF    && SS_MEM_CPUSYS_SW == OFF_0P8 }} \
+    -state {TOP_ON_CPU_OFF_MEM_ON  -logic_expr { SS_PDTOP == ON_0P8 && SS_PDCPUSYS_SW == OFF    && SS_MEM_CPUSYS_SW == ON_0P8 }} 
+
+#
+#add_power_state -domain PDCPUSYS_SW -state TOP_LP_CPU_OFF -update {-supply_expr { \
+#    SS_PDTOP == 0P7 && SS_PDCPUSYS_SW == OFF}}
+#
+#add_power_state -domain PDCPUSYS_SW -state TOP_ON_CPU_OFF -update {-supply_expr { \
+#    SS_PDTOP == 0P8 && SS_PDCPUSYS_SW == OFF}}
+#--------------------------------------------------------------------------------
+#memory power connect
+#--------------------------------------------------------------------------------
+load_upf $PROJ_DIR/de/cpu_sys/upf/cpu_sys_pwr_wrap.macro.upf
+if {[info exist CLP_CHK]} {
+load_upf $PROJ_DIR/de/cpu_sys/upf/cpu_sys_pwr_wrap.rampd_connect.upf
+}

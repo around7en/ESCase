@@ -1,0 +1,25 @@
+if {![info exist DESIGN(dft,clk_hier)]} {
+    set DESIGN(dft,clk_hier) "u_cp_clk_core_wrap/u_cp_clk_core/"
+}
+
+set DESIGN(mbist,pin,cons0) [list \
+]
+
+set DESIGN(mbist,pin,cons1) [list \
+]
+
+set DESIGN(occ_clock_list) [list \
+    standard clk_dfe $DESIGN(dft,clk_hier)u_clk_dfe_occ_buf/cmind_uj_ckcell/I \
+    standard clk_modem $DESIGN(dft,clk_hier)u_clk_modem_occ_buf/cmind_uj_ckcell/I \
+    standard clk_rft $DESIGN(dft,clk_hier)u_clk_rft_occ_buf/cmind_uj_ckcell/I \
+    standard clk_dac $DESIGN(dft,clk_hier)u_clk_dac_occ_buf/cmind_uj_ckcell/I \
+    standard clk_adc_1x_i $DESIGN(dft,clk_hier)u_clk_adc_1x_i_occ_buf/cmind_uj_ckcell/I \
+    standard clk_adc_1x_q $DESIGN(dft,clk_hier)u_clk_adc_1x_q_occ_buf/cmind_uj_ckcell/I \
+    standard clk_adc_2x $DESIGN(dft,clk_hier)u_clk_adc_2x_occ_buf/cmind_uj_ckcell/I \
+    standard clk_mipi_rffe $DESIGN(dft,clk_hier)u_clk_mipi_rffe_occ_buf/cmind_uj_ckcell/I \
+    standard clk_txpll_mash $DESIGN(dft,clk_hier)u_clk_txpll_mash_occ_buf/cmind_uj_ckcell/I \
+    standard clk_rxpll_mash $DESIGN(dft,clk_hier)u_clk_rxpll_mash_occ_buf/cmind_uj_ckcell/I \
+    standard clk_top_ahb_scan $DESIGN(dft,clk_hier)u_clk_top_ahb_scan_occ_buf/cmind_uj_ckcell/I \
+    standard clk_psram_ahb_scan $DESIGN(dft,clk_hier)u_clk_psram_ahb_scan_occ_buf/cmind_uj_ckcell/I \
+    standard clk_sysram_ahb_scan $DESIGN(dft,clk_hier)u_clk_sysram_ahb_scan_occ_buf/cmind_uj_ckcell/I \
+]

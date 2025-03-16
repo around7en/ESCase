@@ -1,0 +1,17 @@
+set DESIGN(mbist,pin,cons0) [list \
+    $DESIGN(dft,clk_hier)u_clk_pub_main_mtx_mux/u_cmind_cell_icg_clk_in0/cmind_uj_ckcell/Q \
+    $DESIGN(dft,clk_hier)u_clk_pub_main_mtx_mux/u_cmind_cell_icg_clk_in1/cmind_uj_ckcell/Q \
+    $DESIGN(dft,clk_hier)u_clk_pub_main_mtx_mux/u_cmind_cell_icg_clk_in2/cmind_uj_ckcell/Q \
+    $DESIGN(dft,clk_hier)u_clk_pub_main_mtx_mux/u_cmind_cell_icg_clk_in3/cmind_uj_ckcell/Q \
+    $DESIGN(dft,clk_hier)u_clk_pub_main_mtx_mux/u_cmind_cell_icg_clk_in4/cmind_uj_ckcell/Q \
+    $DESIGN(dft,clk_hier)u_clk_pub_main_mtx_mux/u_cmind_cell_icg_clk_in5/cmind_uj_ckcell/Q \
+]
+
+set DESIGN(mbist,pin,cons1) [list \
+    $DESIGN(dft,clk_hier)u_clk_pub_main_mtx_mux/u_cmind_cell_icg_clk_in6/cmind_uj_ckcell/E \
+]
+
+set DESIGN(occ_clock_list) [list \
+    standard clk_pub_main_mtx $DESIGN(dft,clk_hier)u_clk_pub_main_mtx_occ_buf/cmind_uj_ckcell/I \
+    standard clk_pub_cfg $DESIGN(dft,clk_hier)u_clk_pub_cfg_occ_buf/cmind_uj_ckcell/I \
+]

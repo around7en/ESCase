@@ -1,0 +1,3 @@
+connect_supply_net VDD_CORE_PUBSYS_SW -ports u_pub_sys_top/u_pub_sys_sram_top/u_pub_sys_sram_top_psram_ctrl_wdata_fifo_64x36_wrap_0/u_T22ARF2HP64X36K2M2H_0/VDDPE
+connect_supply_net VDD_CORE_PUBSYS_SW -ports u_pub_sys_top/u_pub_sys_sram_top/u_pub_sys_sram_top_psram_ctrl_wdata_fifo_64x36_wrap_0/u_T22ARF2HP64X36K2M2H_0/VDDCE
+connect_supply_net VSS                -ports u_pub_sys_top/u_pub_sys_sram_top/u_pub_sys_sram_top_psram_ctrl_wdata_fifo_64x36_wrap_0/u_T22ARF2HP64X36K2M2H_0/VSSE 

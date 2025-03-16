@@ -1,0 +1,7 @@
+lappend CLOCK_GROUP(aon_sys_pwr_wrap_clk_1_875k)  ${AON_SYS_HIER}aon_sys_pwr_wrap_clk_1_875k
+lappend CLOCK_GROUP(aon_sys_pwr_wrap_clk_32k)  ${AON_SYS_HIER}aon_sys_pwr_wrap_clk_32k ${AON_SYS_HIER}aon_sys_pwr_wrap_clk_aon_frc_32k
+lappend CLOCK_GROUP(top_for_aon_clk_3_25m_top_for_aon)  ${AON_SYS_HIER}aon_sys_pwr_wrap_clk_aon_pmu_3_25m
+lappend CLOCK_GROUP(aon_sys_pwr_wrap_clk_30_72m)  ${AON_SYS_HIER}aon_sys_pwr_wrap_clk_aon_frc_30_72m
+lappend CLOCK_GROUP(aon_sys_pwr_wrap_clk_aon_frc_aux)  ${AON_SYS_HIER}clk_aon_frc_aux
+lappend CLOCK_GROUP(aon_sys_pwr_wrap_clk_strappin)  ${AON_SYS_HIER}clk_strappin
+lappend CLOCK_GROUP(aon_sys_pwr_wrap_clk_15k)  ${AON_SYS_HIER}clk_15k

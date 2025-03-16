@@ -1,0 +1,426 @@
+
+#-------------------------------------------------------------------------------
+# Unified Power Format (IEEE Std 1801-2013)
+#-------------------------------------------------------------------------------
+
+upf_version 2.1
+
+set PROJ_DIR $env(PROJ_DIR)
+if {![info exist IS_FLAT]} {
+    set IS_FLAT 0
+}
+
+if {!$IS_FLAT} {
+    set clamphi_iso_sink_cell "
+        ISOHISGD4BWP7T40P140HVT
+        ISOHISGD4BWP7T35P140HVT
+    "
+    
+    set clamplo_iso_sink_cell "
+        ISOLOSGD4BWP7T40P140HVT
+        ISOLOSGD4BWP7T35P140HVT
+    "
+    
+    set clamphi_elshl_sink_cell "
+        LVLHLCSGD4BWP7T40P140HVT
+        LVLHLCSGD4BWP7T35P140HVT
+    "
+    
+    set clamplo_elshl_sink_cell "
+        LVLHLCLOSGD4BWP7T40P140HVT
+        LVLHLCLOSGD4BWP7T35P140HVT
+    "
+    
+    set lvl_lh_src_cell "
+        LVLSRLHSGD4BWP7T40P140HVT
+        LVLSRLHSGD4BWP7T35P140HVT
+    "
+} else {
+    load_upf $PROJ_DIR/de/common/upf/upf_setup.tcl
+}
+
+#-------------------------------------------------------------------------------
+# Supply ports and nets
+#-------------------------------------------------------------------------------
+
+create_supply_port -direction in VDD_AON
+create_supply_port -direction in VSS_CORE
+create_supply_port -direction in VDD_CORE
+create_supply_port -direction inout VDD_AONIO
+create_supply_port -direction in VSS_AONIO
+
+create_supply_net VDD_AON
+create_supply_net VSS_CORE
+create_supply_net VDD_CORE
+create_supply_net VDD_AONIO
+create_supply_net VSS_AONIO
+
+connect_supply_net VDD_AON   -ports VDD_AON
+connect_supply_net VSS_CORE  -ports VSS_CORE
+connect_supply_net VDD_CORE  -ports VDD_CORE
+connect_supply_net VDD_AONIO -ports VDD_AONIO
+connect_supply_net VSS_AONIO -ports VSS_AONIO
+
+#-------------------------------------------------------------------------------
+# Supply set 
+#-------------------------------------------------------------------------------
+
+create_supply_set SS_AON          -function {power VDD_AON}            -function {ground VSS_CORE}
+
+create_supply_set SS_CORE         -function {power VDD_CORE}           -function {ground VSS_CORE}
+
+create_supply_set SS_AONIO        -function {power VDD_AONIO}          -function {ground VSS_AONIO}
+
+#-------------------------------------------------------------------------------
+# Power Domains
+#-------------------------------------------------------------------------------
+
+create_power_domain PD_AON   -include_scope               -supply {primary SS_AON} 
+#create_power_domain PD_CORE  -elements u_xmw_rtc_top_buf  -supply {primary SS_CORE} 
+
+#-------------------------------------------------------------------------------
+# Port Attributes
+#-------------------------------------------------------------------------------
+
+set analog2aon_inputs "
+        rstn_int 
+        anlg_ldo_io_set 
+        anlg_bk_core_scp_out 
+"
+
+set aon2analog_outputs "
+        anlg_aon_reg_resv       
+        anlg_bg_en              
+        anlg_bk_core_clk_sel    
+        anlg_bk_core_comps_type 
+        anlg_bk_core_eco_en     
+        anlg_bk_core_en         
+        anlg_bk_core_mode_en    
+        anlg_bk_core_mode_set   
+        anlg_bk_core_ocp_adj    
+        anlg_bk_core_ocp_en     
+        anlg_bk_core_osc_en     
+        anlg_bk_core_vo_adj2    
+        anlg_bk_core_zcd_en     
+        anlg_bk_gen_eco_en      
+        anlg_bk_gen_en          
+        anlg_bk_gen_mode_en     
+        anlg_bk_gen_mode_set    
+        anlg_bk_gen_ocp_en      
+        anlg_bk_gen_osc_en      
+        anlg_bk_gen_vo_adj2     
+        anlg_core_iso           
+        anlg_ldo_ana_en         
+        anlg_ldo_ana_vref       
+        anlg_ldo_dcxo_en        
+        anlg_ldo_dcxo_trim      
+        anlg_ldo_io_en          
+        anlg_ldo_io_ocp_en      
+        anlg_ldo_io_softstart_en
+        anlg_ldo_io_vref        
+        anlg_ldo_rtn_en         
+        anlg_ldo_rtn_vout_sel   
+        anlg_bk_core_hiz_en     
+"
+
+if {!$IS_FLAT} {
+    set_port_attributes -ports  $analog2aon_inputs  -driver_supply  SS_AON 
+    set_port_attributes -ports  $aon2analog_outputs -receiver_supply  SS_AON 
+}
+
+set rtc2aon_input "
+        ptest_en_aon
+        clk_rtc32k_aon     
+        rst_aon_por_n      
+        rtc_prescale_1ms 
+        aon_deep_sleep_hold_exter
+        rc32k_cali_trig
+        aon_root_clk_en    
+        rtc2aon_wak_pbint  
+        rtc2aon_wak_vbus   
+        rtc2aon_wak_pwr    
+        rtc2aon_wak_rstkey_deassert
+        clk_rstkey_dbnc
+        rst_rstkey_dbnc_n
+        rstkey_dbnc_start
+        rstkey_dbnc_int_en
+        rstkey_dbnc_int_clr
+        rstkey_op_aon
+        rst_key_n_aon
+        rstkey_mask
+        rstkey_root_clk_en_aon
+        rstkey_iso_en_aon
+        force_turnoff_aon
+        intc_src_mask_aon
+        rtc2aon_dummy      
+"
+
+set aon2rtc_output "
+        rtc_prescale_1ms_busy
+        aon_deep_sleep_req 
+        top_iso_en         
+        alarm_irq    
+        rc32k_cali_irq
+        rc32k_cali_done
+        rstn_int_dbnc
+        aon2rtc_dummy      
+"
+
+if {!$IS_FLAT} {
+    set_port_attributes -ports  $rtc2aon_input  -driver_supply  SS_AON 
+    set_port_attributes -ports  $aon2rtc_output -receiver_supply  SS_AON 
+}
+
+set io_inouts "
+        AONINT0 
+        AONINT1 
+        AONINT2 
+"
+
+if {!$IS_FLAT} {
+    set_port_attributes -ports  $io_inouts -driver_supply SS_AONIO -receiver_supply SS_AONIO
+}
+
+set top2aon_iso1 "
+        top_deep_sleep_req 
+        top_deep_sleep_start 
+        top2aon_dummy[2] 
+        top2aon_dummy[3] 
+"
+
+set top2aon_iso0 "
+                    clk_3_25m
+                    clk_30_72m
+                    clk_xo26m_32k              
+                    aon_psel     
+                    aon_penable  
+                    aon_pwrite  
+                    aon_paddr    
+                    aon_pwdata
+                    ldo_dcxo_en  
+                    top_int_irq     
+                    rc32k_cali_done_top
+                    bk_core_ocp_out
+                    bk_gen_en_clr
+                    ldo_io_en_clr
+                    frc_ratio_vld
+                    frc_ratio_inte
+                    frc_ratio_frac
+                    gpio5_out
+                    gpio5_oen
+                    gpio6_out
+                    gpio6_oen
+                    gpio7_out
+                    gpio7_oen
+                    keyout1
+                    keyout1_OE
+                    aon_frc_aux_en         
+                    dbgbus_aon_chain_sel
+                    top2aon_dummy[0]
+                    top2aon_dummy[1]
+"
+
+set aon2top_outputs "
+            ptest_en_top  
+            ptest_mode_sel
+            clk_aon_frc_aux
+            clk_15k
+            clk_strappin
+            rst_top_por_n
+            rst_strappin
+            aon_prdata
+            aon_pready
+            top_deep_sleep_hold_exter
+            rc32k_cali_trig_top
+            rst_key_n_top
+            rstkey_iso_en_top
+            rstkey_root_clk_en_top
+            intc_src_mask_top
+            force_turnoff_top
+            int_req_cdnsrtc
+            int_aon_frc
+            int_aon_eic
+            int_top_pwron
+            int_intc_req
+            int_aon_scp_alarm
+            cali_cpll_frac
+            cali_lenth_sel
+            aon_frc_cnt
+            gpio5_in
+            gpio6_in
+            gpio7_in
+            keyin1
+            keyin4
+            busy_clk_30_72m_aon
+            busy_clk_3_25m_aon
+            busy_clk_xo26m_32k_aon
+            rstn_int_chk
+            ldo_io_set_chk
+            dbgbus_aon_data
+            aon2top_dummy
+"
+
+
+if {!$IS_FLAT} {
+    set_port_attributes -ports "$top2aon_iso0 $top2aon_iso1" -driver_supply SS_CORE
+    set_port_attributes -ports $aon2top_outputs -receiver_supply SS_CORE
+}
+
+#-------------------------------------------------------------------------------
+# top lvl,els
+#-------------------------------------------------------------------------------
+
+if {[info exist synopsys_program_name] && ( ${synopsys_program_name} == "dc_shell" || ${synopsys_program_name} == "pt_shell" ) } {
+    set_level_shifter PD_AON_TO_TOP_LVL \
+        -domain PD_AON \
+        -input_supply SS_AON \
+        -output_supply SS_CORE \
+        -rule low_to_high \
+        -location self \
+        -elements $aon2top_outputs
+    map_level_shifter_cell PD_AON_TO_TOP_LVL \
+        -domain PD_AON \
+        -lib_cells $lvl_lh_src_cell
+} else {
+    set_level_shifter PD_AON_TO_TOP_LVL \
+        -domain PD_AON \
+        -source SS_AON \
+        -sink SS_CORE \
+        -input_supply_set SS_AON \
+        -output_supply_set SS_CORE \
+        -rule low_to_high \
+        -location self \
+        -elements $aon2top_outputs
+    map_level_shifter_cell PD_AON_TO_TOP_LVL \
+        -domain PD_AON \
+        -lib_cells $lvl_lh_src_cell
+}
+
+###################################################
+set_isolation PD_ELS_ISO0 \
+    -domain PD_AON \
+    -isolation_supply_set SS_AON \
+    -clamp_value 0 \
+    -isolation_signal u_aon_sys_top/u_aon_pmu/u_top_els_nsleep/Z \
+    -isolation_sense low \
+    -location self \
+    -name_prefix top_iso0 \
+    -source SS_CORE \
+    -sink SS_AON\
+    -elements $top2aon_iso0
+map_isolation_cell PD_ELS_ISO0 \
+    -domain PD_AON \
+    -lib_cells $clamplo_elshl_sink_cell
+
+if {[info exist synopsys_program_name] && ( ${synopsys_program_name} == "dc_shell" || ${synopsys_program_name} == "pt_shell" ) } {
+    set_level_shifter PD_ELS_ISO0_LVL \
+        -domain PD_AON \
+        -source SS_CORE\
+        -sink SS_AON\
+        -input_supply SS_CORE \
+        -output_supply SS_AON \
+        -rule high_to_low \
+        -location self \
+        -elements $top2aon_iso0
+    map_level_shifter_cell PD_ELS_ISO0_LVL \
+        -domain PD_AON \
+        -lib_cells $clamplo_elshl_sink_cell
+} else {
+    set_level_shifter PD_ELS_ISO0_LVL \
+        -domain PD_AON \
+        -source SS_CORE\
+        -sink SS_AON\
+        -input_supply_set SS_CORE \
+        -output_supply_set SS_AON \
+        -rule high_to_low \
+        -location self \
+        -elements $top2aon_iso0
+    map_level_shifter_cell PD_ELS_ISO0_LVL \
+        -domain PD_AON \
+        -lib_cells $clamplo_elshl_sink_cell
+}
+
+###################################################
+
+set_isolation PD_AON_FROM_TOP_ELS_ISO1 \
+    -domain PD_AON \
+    -isolation_supply_set SS_AON \
+    -clamp_value 1 \
+    -isolation_signal u_aon_sys_top/u_aon_pmu/u_top_els_nsleep/Z \
+    -isolation_sense low \
+    -location self \
+    -name_prefix top_iso1 \
+    -source SS_CORE \
+    -sink SS_AON\
+    -elements $top2aon_iso1
+map_isolation_cell PD_AON_FROM_TOP_ELS_ISO1 \
+    -domain PD_AON \
+    -lib_cells $clamphi_elshl_sink_cell
+
+if {[info exist synopsys_program_name] && ( ${synopsys_program_name} == "dc_shell" || ${synopsys_program_name} == "pt_shell" ) } {
+    set_level_shifter PD_AON_FROM_TOP_ELS_ISO1_LVL \
+        -domain PD_AON \
+        -source SS_CORE\
+        -sink SS_AON\
+        -input_supply SS_CORE \
+        -output_supply SS_AON \
+        -rule high_to_low \
+        -location self \
+        -elements $top2aon_iso1
+    map_level_shifter_cell PD_AON_FROM_TOP_ELS_ISO1_LVL \
+        -domain PD_AON \
+        -lib_cells $clamphi_elshl_sink_cell
+} else {
+    set_level_shifter PD_AON_FROM_TOP_ELS_ISO1_LVL \
+        -domain PD_AON \
+        -source SS_CORE\
+        -sink SS_AON\
+        -input_supply_set SS_CORE \
+        -output_supply_set SS_AON \
+        -rule high_to_low \
+        -location self \
+        -elements $top2aon_iso1
+    map_level_shifter_cell PD_AON_FROM_TOP_ELS_ISO1_LVL \
+        -domain PD_AON \
+        -lib_cells $clamphi_elshl_sink_cell
+}
+
+
+#--------------------------------------------------------------------------------
+#power state
+#--------------------------------------------------------------------------------
+add_power_state SS_AONIO -supply \
+    -state {SS_AONIO_ON_1P8 -supply_expr {power == `{FULL_ON,1.8} && ground == `{FULL_ON,0.0} }} \
+    -state {SS_AONIO_OFF    -supply_expr {power == `{OFF}         && ground == `{FULL_ON,0.0} }}
+
+add_power_state SS_AON -supply \
+    -state {SS_AON_ON_0P8 -supply_expr {power == `{FULL_ON,0.8} && ground == `{FULL_ON,0.0} }} \
+    -state {SS_AON_ON_0P7 -supply_expr {power == `{FULL_ON,0.7} && ground == `{FULL_ON,0.0} }} \
+    -state {SS_AON_OFF    -supply_expr {power == `{OFF}         && ground == `{FULL_ON,0.0} }}
+
+add_power_state SS_CORE -supply \
+    -state {SS_CORE_ON_0P8 -supply_expr {power == `{FULL_ON,0.8} && ground == `{FULL_ON,0.0} }} \
+    -state {SS_CORE_ON_0P7 -supply_expr {power == `{FULL_ON,0.7} && ground == `{FULL_ON,0.0} }} \
+    -state {SS_CORE_OFF    -supply_expr {power == `{OFF}         && ground == `{FULL_ON,0.0} }}
+
+add_power_state PD_AON -domain \
+    -state {ALL_ON_0        -logic_expr { SS_AONIO == SS_AONIO_ON_1P8 && SS_AON == SS_AON_ON_0P8 && SS_CORE == SS_CORE_ON_0P8}} \
+    -state {ALL_ON_1        -logic_expr { SS_AONIO == SS_AONIO_ON_1P8 && SS_AON == SS_AON_ON_0P7 && SS_CORE == SS_CORE_ON_0P8}} \
+    -state {ALL_ON_2        -logic_expr { SS_AONIO == SS_AONIO_ON_1P8 && SS_AON == SS_AON_ON_0P7 && SS_CORE == SS_CORE_ON_0P7}} \
+    -state {CORE_OFF_0      -logic_expr { SS_AONIO == SS_AONIO_ON_1P8 && SS_AON == SS_AON_ON_0P8 && SS_CORE == SS_CORE_OFF}} \
+    -state {CORE_OFF_1      -logic_expr { SS_AONIO == SS_AONIO_ON_1P8 && SS_AON == SS_AON_ON_0P7 && SS_CORE == SS_CORE_OFF}} \
+    -state {AONIO_OFF_0     -logic_expr { SS_AONIO == SS_AONIO_OFF && SS_AON == SS_AON_ON_0P8 && SS_CORE == SS_CORE_OFF}} \
+    -state {AONIO_OFF_1     -logic_expr { SS_AONIO == SS_AONIO_OFF && SS_AON == SS_AON_ON_0P7 && SS_CORE == SS_CORE_OFF}} \
+    -state {ALL_OFF         -logic_expr { SS_AONIO == SS_AONIO_OFF && SS_AON == SS_AON_OFF && SS_CORE == SS_CORE_OFF}}
+
+#add_power_state PD_AON -domain \
+#    -state {ALL_ON_0        -logic_expr { SS_AONIO == SS_AONIO_ON_1P8 && SS_AON == SS_AON_ON_0P8 && SS_CORE == SS_CORE_ON_0P8}} \
+#    -state {ALL_ON_2        -logic_expr { SS_AONIO == SS_AONIO_ON_1P8 && SS_AON == SS_AON_ON_0P7 && SS_CORE == SS_CORE_ON_0P7}} \
+#    -state {CORE_OFF_0      -logic_expr { SS_AONIO == SS_AONIO_ON_1P8 && SS_AON == SS_AON_ON_0P8 && SS_CORE == SS_CORE_OFF}} \
+#    -state {CORE_OFF_1      -logic_expr { SS_AONIO == SS_AONIO_ON_1P8 && SS_AON == SS_AON_ON_0P7 && SS_CORE == SS_CORE_OFF}} \
+#    -state {AONIO_OFF_0     -logic_expr { SS_AONIO == SS_AONIO_OFF && SS_AON == SS_AON_ON_0P8 && SS_CORE == SS_CORE_OFF}} \
+#    -state {AONIO_OFF_1     -logic_expr { SS_AONIO == SS_AONIO_OFF && SS_AON == SS_AON_ON_0P7 && SS_CORE == SS_CORE_OFF}} \
+#    -state {ALL_OFF         -logic_expr { SS_AONIO == SS_AONIO_OFF && SS_AON == SS_AON_OFF && SS_CORE == SS_CORE_OFF}}
+
+
+load_upf $PROJ_DIR/de/aon_sys/upf/aon_sys_pwr_wrap.macro.upf

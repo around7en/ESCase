@@ -1,0 +1,128 @@
+
+#-------------------------------------------------------------------------------
+# Unified Power Format (IEEE Std 1801-2013)
+#-------------------------------------------------------------------------------
+
+upf_version 2.1
+
+set PROJ_DIR /proj/NanH/release/v0p9/me/to_be/pub_sys_pwr_wrap/scan_20231214_1323/upf
+    if [regexp "/impl/rev" [info script]] {
+        regsub "^.*/release/v" $PROJ_DIR "[regsub "/impl/.*" [info script] ""]/impl/rev" PROJ_DIR
+        regsub "/me/to_be" $PROJ_DIR "/exchange" PROJ_DIR
+    }
+if {![info exist IS_FLAT]} {
+    set IS_FLAT 0
+}
+
+load_upf $PROJ_DIR/de/common/upf/upf_setup.tcl
+#-------------------------------------------------------------------------------
+# Supply ports and nets
+#-------------------------------------------------------------------------------
+
+create_supply_port -direction in VDD_CORE
+create_supply_port -direction in VSS
+
+create_supply_net VDD_CORE
+create_supply_net VSS
+
+connect_supply_net VDD_CORE -ports VDD_CORE
+connect_supply_net VSS -ports VSS
+
+create_supply_net VDD_CORE_PUBSYS_SW    -resolve parallel
+#create_supply_net VSS_MEM_PUBSYS_SW     -resolve parallel
+
+#-------------------------------------------------------------------------------
+# Supply set 
+#-------------------------------------------------------------------------------
+
+create_supply_set SS_PDTOP          -function {power VDD_CORE}            -function {ground VSS}
+
+create_supply_set SS_PDPUBSYS_SW    -function {power VDD_CORE_PUBSYS_SW}  -function {ground VSS}
+
+#create_supply_set SS_MEM_PUBSYS_SW  -function {power VDD_CORE}            -function {ground VSS_MEM_PUBSYS_SW}
+
+#-------------------------------------------------------------------------------
+# Power Domains
+#-------------------------------------------------------------------------------
+
+create_power_domain PDPUBSYS_SW   -include_scope  -supply {primary SS_PDPUBSYS_SW} 
+
+#-------------------------------------------------------------------------------
+# Port Attributes
+#-------------------------------------------------------------------------------
+set aon_inputs [list \
+        pubsys_shutdown_n \
+]
+#        pubsys_ram_slp_n \
+#        pubsys_ram_dslp_n \
+#        pubsys_ram_sd \
+
+set aon_outputs [list \
+        pubsys_shutdown_ack_n \
+]
+#        pubsys_ram_sd_ack \
+
+if {!$IS_FLAT} {
+    set_port_attributes -elements {.} -applies_to inputs  -exclude_ports $aon_inputs -driver_supply SS_PDTOP
+    set_port_attributes -elements {.} -applies_to outputs -exclude_ports $aon_outputs -receiver_supply SS_PDPUBSYS_SW
+    set_port_attributes -ports $aon_inputs -driver_supply SS_PDTOP
+    set_port_attributes -ports $aon_outputs -receiver_supply SS_PDTOP
+}
+#-------------------------------------------------------------------------------
+# Power Switches
+#-------------------------------------------------------------------------------
+create_power_switch  PSW_PUBSYS \
+    -input_supply_port  { TVDD      VDD_CORE} \
+    -output_supply_port { VDD       VDD_CORE_PUBSYS_SW} \
+    -control_port       { NSLEEPIN  pubsys_shutdown_n} \
+    -ack_port           { NSLEEPOUT pubsys_shutdown_ack_n 1} \
+    -on_state           { on_state  TVDD { NSLEEPIN} } \
+    -off_state          { off_state {~NSLEEPIN} }\
+    -domain             PDPUBSYS_SW
+
+map_power_switch   PSW_PUBSYS \
+    -domain PDPUBSYS_SW \
+    -lib_cells $psw_single_header_cell 
+#--------------------------------------------------------------------------------
+#power state
+#--------------------------------------------------------------------------------
+add_power_state SS_PDTOP -supply \
+    -state {ON_0P8 -supply_expr {power == `{FULL_ON,0.8} && ground == `{FULL_ON,0.0} }} \
+    -state {ON_0P7 -supply_expr {power == `{FULL_ON,0.7} && ground == `{FULL_ON,0.0} }} \
+    -state {OFF    -supply_expr {power == `{OFF}         && ground == `{FULL_ON,0.0} }}
+
+add_power_state SS_PDPUBSYS_SW -supply \
+    -state {ON_0P8 -supply_expr {power == `{FULL_ON,0.8} && ground == `{FULL_ON,0.0} }} \
+    -state {OFF    -supply_expr {power == `{OFF}         && ground == `{FULL_ON,0.0} }}
+
+#add_power_state SS_MEM_PUBSYS_SW -supply \
+#    -state {ON_0P8  -supply_expr {power == `{FULL_ON,0.8} && ground == `{FULL_ON,0.0} }} \
+#    -state {OFF_0P8 -supply_expr {power == `{FULL_ON,0.8} && ground == `{OFF}         }} \
+#    -state {OFF_0P7 -supply_expr {power == `{FULL_ON,0.7} && ground == `{OFF}         }} \
+#    -state {OFF     -supply_expr {power == `{OFF}         && ground == `{OFF}         }}
+
+#add_power_state PDPUBSYS_SW -domain \
+#    -state {ALL_ON          -logic_expr { SS_PDTOP == ON_0P8 && SS_PDPUBSYS_SW == ON_0P8 && SS_MEM_PUBSYS_SW == ON_0P8  }} \
+#    -state {ALL_OFF         -logic_expr { SS_PDTOP == OFF    && SS_PDPUBSYS_SW == OFF    && SS_MEM_PUBSYS_SW == OFF     }} \
+#    -state {TOP_LP_PUB_OFF  -logic_expr { SS_PDTOP == ON_0P7 && SS_PDPUBSYS_SW == OFF    && SS_MEM_PUBSYS_SW == OFF_0P7 }} \
+#    -state {TOP_ON_PUB_OFF  -logic_expr { SS_PDTOP == ON_0P8 && SS_PDPUBSYS_SW == OFF    && SS_MEM_PUBSYS_SW == OFF_0P8 }}
+
+add_power_state PDPUBSYS_SW -domain \
+    -state {ALL_ON          -logic_expr { SS_PDTOP == ON_0P8 && SS_PDPUBSYS_SW == ON_0P8 }} \
+    -state {ALL_OFF         -logic_expr { SS_PDTOP == OFF    && SS_PDPUBSYS_SW == OFF    }} \
+    -state {TOP_LP_PUB_OFF  -logic_expr { SS_PDTOP == ON_0P7 && SS_PDPUBSYS_SW == OFF    }} \
+    -state {TOP_ON_PUB_OFF  -logic_expr { SS_PDTOP == ON_0P8 && SS_PDPUBSYS_SW == OFF    }}
+
+#
+#add_power_state -domain PDPUBSYS_SW -state TOP_LP_PUB_OFF -update {-supply_expr { \
+#    SS_PDTOP == 0P7 && SS_PDPUBSYS_SW == OFF}}
+#
+#add_power_state -domain PDPUBSYS_SW -state TOP_ON_PUB_OFF -update {-supply_expr { \
+#    SS_PDTOP == 0P8 && SS_PDPUBSYS_SW == OFF}}
+#--------------------------------------------------------------------------------
+#memory power connect
+#--------------------------------------------------------------------------------
+load_upf $PROJ_DIR/de/pub_sys/upf/pub_sys_pwr_wrap.macro.upf
+if {[info exist CLP_CHK]} {
+load_upf $PROJ_DIR/de/pub_sys/upf/pub_sys_pwr_wrap.rampd_connect.upf
+}

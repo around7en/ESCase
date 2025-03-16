@@ -1,0 +1,85 @@
+# -----------------------------------------------------------------------------
+#  The confidential and proprietary information contained in this file may
+#  only be used by a person authorised under and to the extent permitted
+#  by a subsisting licensing agreement from Arm Technology (China) Co., Ltd.
+#  or its affiliates.
+#
+#             (C) COPYRIGHT 2018-2020 Arm Technology (China) Co., Ltd.
+#                 or its affiliates.
+#             (C) COPYRIGHT 2014-2020 Arm Limited or its affiliates.
+#                 ALL RIGHTS RESERVED
+#
+#  This entire notice must be reproduced on all copies of this file
+#  and copies of this file may only be made by a person if such person is
+#  permitted to do so under the terms of a subsisting license agreement
+#  from Arm Technology (China) Co., Ltd. or its affiliates.
+#
+#       SVN Information
+#
+#       Checked In          : $Date: 2019-08-26 13:58:54 +0800 (Mon, 26 Aug 2019) $
+#
+#       Revision            : $Revision: 223963 $
+#
+#       Release Information : STAR-r1p0-00eac0
+#
+#-------------------------------------------------------------------------------
+
+#-------------------------------------------------------------------------------
+# Function: testbench UPF file for RTL simulation of iRM UPF
+#-------------------------------------------------------------------------------
+
+#-------------------------------------------------------------------------------
+# Setting variables
+#-------------------------------------------------------------------------------
+
+set TOP tbench/u_mcu
+set CLUSTER_SCOPE u_sys/u_starmcu
+set STAR_SCOPE    u_sys/u_starmcu/u_STAR
+
+# The testbench.upf needs to point to the UPF used for implementation however the execution testbench requires the UPF to be in a directory called 'upf'.
+# It is suggested that  a link is created called 'upf' that points to the 'upf_typical_cadence_implementation' directory.
+set UPF_DIR_PATH ../../star/power_intent/upf
+set UPF_CONSTRAINT     STAR_constraints.upf
+set UPF_CONFIGURATION  STAR_configuration.upf
+set UPF_IMPLEMENTATION STAR_implementation.upf
+
+upf_version 2.0
+
+set_design_top ${TOP}
+
+#-------------------------------------------------------------------------------
+# Load STAR UPF
+#-------------------------------------------------------------------------------
+
+load_upf ${UPF_DIR_PATH}/${UPF_CONSTRAINT}     -scope ${STAR_SCOPE}
+load_upf ${UPF_DIR_PATH}/${UPF_CONFIGURATION}  -scope ${STAR_SCOPE}
+load_upf ${UPF_DIR_PATH}/${UPF_IMPLEMENTATION} -scope ${STAR_SCOPE}
+
+#-------------------------------------------------------------------------------
+# Connect supply Nets and Ports from TB Level to STAR level
+#-------------------------------------------------------------------------------
+#Connecting Top Level
+set_scope /${TOP}
+
+#Power Switch Connections
+connect_logic_net mcu_npwrupcore_hammer    -ports "${STAR_SCOPE}/nPWRUPCORE_HAMMER"
+connect_logic_net mcu_npwrupfpu_hammer     -ports "${STAR_SCOPE}/nPWRUPFPU_HAMMER"
+connect_logic_net mcu_npwrupdebug_hammer   -ports "${STAR_SCOPE}/nPWRUPDEBUG_HAMMER"
+
+connect_logic_net mcu_npwrupcore_trickle   -ports "${STAR_SCOPE}/nPWRUPCORE_TRICKLE"
+connect_logic_net mcu_npwrupfpu_trickle    -ports "${STAR_SCOPE}/nPWRUPFPU_TRICKLE"
+connect_logic_net mcu_npwrupdebug_trickle  -ports "${STAR_SCOPE}/nPWRUPDEBUG_TRICKLE"
+
+connect_logic_net mcu_npwrupretncore       -ports "${STAR_SCOPE}/nPWRUPRetnCORE"
+connect_logic_net mcu_npwrupretnfpu        -ports "${STAR_SCOPE}/nPWRUPRetnFPU"
+connect_logic_net mcu_npwrupretndebug      -ports "${STAR_SCOPE}/nPWRUPRetnDEBUG"
+
+#Isolation Signal Connections
+connect_logic_net mcu_nisolatecore         -ports "${STAR_SCOPE}/nISOLATECORE"
+connect_logic_net mcu_nisolatefpu          -ports "${STAR_SCOPE}/nISOLATEFPU"
+connect_logic_net mcu_nisolatedebug        -ports "${STAR_SCOPE}/nISOLATEDEBUG"
+
+#Retention Signal Connections
+connect_logic_net mcu_nretncore            -ports "${STAR_SCOPE}/nRETNCORE"
+connect_logic_net mcu_nretnfpu             -ports "${STAR_SCOPE}/nRETNFPU"
+connect_logic_net mcu_nretndebug           -ports "${STAR_SCOPE}/nRETNDEBUG"

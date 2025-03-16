@@ -1,0 +1,209 @@
+#-------------------------------------------------------------------------------
+# The confidential and proprietary information contained in this file may
+# only be used by a person authorised under and to the extent permitted
+# by a subsisting licensing agreement from Arm Limited.
+#
+#                 (C) COPYRIGHT 2018-2020 Arm Technology (China) Co., Ltd.
+#                     or its affiliates.
+#                 (C) COPYRIGHT 2015-2020 Arm Limited or its affiliates.
+#                       ALL RIGHTS RESERVED
+#
+# This entire notice must be reproduced on all copies of this file
+# and copies of this file may only be made by a person if such person is
+# permitted to do so under the terms of a subsisting license agreement
+# from Arm Limited.
+#
+#      SVN Information
+#
+#      Checked In          : $Date: 2019-08-27 15:48:42 +0800 (Tue, 27 Aug 2019) $
+#
+#      Revision            : $Revision: 224030 $
+#
+#      Release Information : STAR-r1p0-00eac0
+#
+#-------------------------------------------------------------------------------
+#
+#-------------
+# Description
+#-------------
+#  This UPF describes the constraints for STAR, it must be used during
+#  power aware simulation or implementation.
+#
+#  The unconfigured version needs to be rendered before it can be used.
+#  The configured version expects to be called with a scope set to STAR.
+#
+
+upf_version 2.0
+
+#-------------------------------------------------------------------------------
+# Elements
+#-------------------------------------------------------------------------------
+#
+# Elements in CORE
+set CORE_hier [list u_pd_core]
+
+# Elements in DEBUG
+if {![info exists implementation] || !$implementation} {
+  set DEBUG_hier [list gen_dbg/u_pd_dbg]
+} else {
+  set DEBUG_hier [list gen_dbg_u_pd_dbg]
+}
+
+# Elements in FPU
+if {![info exists implementation] || !$implementation} {
+  set FPU_hier [list gen_fpu/u_fpu]
+} else {
+  set FPU_hier [list gen_fpu_u_fpu]
+}
+
+#FIXME check implementation hierarchy name
+# Elements in RAMS
+if {![info exists implementation] || !$implementation} {
+  set RAMS_hier [list gen_rams/u_pd_rams]
+} else {
+  set RAMS_hier [list gen_rams_u_pd_rams]
+}
+
+
+set CORE_CLAMP1  [list $CORE_hier/core_ext_dbg_hready_o \
+                       $CORE_hier/core_ext_sleephold_ack_n_o \
+                       $CORE_hier/core_ext_cp_nsattr_o \
+                       $CORE_hier/core_ext_cp_priv_o \
+                       $CORE_hier/core_ns_o \
+                       $CORE_hier/nvic_dbg_restarted_o \
+                       $CORE_hier/mss_ext_gatetclk_o \
+                       $CORE_hier/mss_ahbs_hreadyout_o ]
+
+set DEBUG_CLAMP1 [list $DEBUG_hier/dwt_mss_ppb_hreadyout_o \
+                       $DEBUG_hier/itm_mss_ppb_hreadyout_o \
+                       $DEBUG_hier/bpu_mss_ppb_hreadyout_o \
+                       $DEBUG_hier/itm_ext_afready_o \
+                       $DEBUG_hier/etm_mss_pready_o \
+                       $DEBUG_hier/etm_ext_afready_o \
+                       $DEBUG_hier/dwt_nvic_wp_ns_o]
+
+set FPU_CLAMP1   [list $FPU_hier/fpu_core_wr_addr_cx_o]
+#FIXME what are the clamp signals for RAMS?
+
+
+
+#-------------------------------------------------------------------------------
+# Power Domains
+#-------------------------------------------------------------------------------
+
+create_power_domain PDSTAR         -include_scope \
+                                   -supply {primary}
+
+create_power_domain PDCORE         -elements "$CORE_hier" \
+                                   -supply {primary}
+
+create_power_domain PDDEBUG        -elements "$DEBUG_hier" \
+                                   -supply {primary}
+
+create_power_domain PDFPU          -elements "$FPU_hier" \
+                                   -supply {primary}
+create_power_domain PDRAMS         -elements "$RAMS_hier" \
+                                   -supply {primary}
+
+
+#-------------------------------------------------------------------------------
+# Isolation Elements
+#-------------------------------------------------------------------------------
+
+set_port_attributes -elements "$CORE_hier"  -applies_to outputs -clamp_value 0
+set_port_attributes  -ports "$CORE_CLAMP1" -clamp_value 1
+
+set_port_attributes -elements "$DEBUG_hier" -applies_to outputs -clamp_value 0
+set_port_attributes -ports "$DEBUG_CLAMP1" -clamp_value 1
+
+set_port_attributes -elements "$FPU_hier"   -applies_to outputs -clamp_value 0
+set_port_attributes -ports "$FPU_CLAMP1" -clamp_value 1
+
+
+#FIXME check clamp values
+set_port_attributes -elements "$RAMS_hier"   -applies_to outputs -clamp_value 0
+
+#-------------------------------------------------------------------------------
+# Power States
+#-------------------------------------------------------------------------------
+
+
+add_power_state PDCORE.primary \
+  -state ON  {-simstate NORMAL} \
+  -state OFF {-simstate NOT_NORMAL}
+
+add_power_state PDCORE \
+  -state RUN {-logic_expr {PDCORE.primary == ON}} \
+  -state SHD {-logic_expr {PDCORE.primary == OFF}}
+
+add_power_state PDDEBUG.primary \
+  -state ON  {-simstate NORMAL} \
+  -state OFF {-simstate NOT_NORMAL}
+
+add_power_state PDDEBUG \
+  -state RUN {-logic_expr {PDDEBUG.primary == ON}} \
+  -state SHD {-logic_expr {PDDEBUG.primary == OFF}}
+
+add_power_state PDFPU.primary \
+  -state ON  {-simstate NORMAL} \
+  -state OFF {-simstate NOT_NORMAL}
+
+add_power_state PDFPU \
+  -state RUN {-logic_expr {PDFPU.primary == ON}} \
+  -state SHD {-logic_expr {PDFPU.primary == OFF}}
+
+add_power_state PDRAMS.primary \
+  -state ON  {-simstate NORMAL} \
+  -state OFF {-simstate NOT_NORMAL}
+
+add_power_state PDRAMS \
+  -state RUN {-logic_expr {PDRAMS.primary == ON }} \
+  -state SHD {-logic_expr {PDRAMS.primary == OFF}}
+
+
+
+# -------------------------------------------------------------------------------------
+# State                           | PDSTAR | PDCORE | PDDEBUG | PDFPU | PDRAMS | PDMTB |
+# --------------------------------|--------|--------|---------|-------|--------|-------|
+# Run                             | ON     |  RUN   |  SHD    |  SHD  |  RUN   |  SHD  | Run mode without trace or debug
+# Run with MTB                    | ON     |  RUN   |  SHD    |  SHD  |  RUN   |  RUN  |
+# --------------------------------|--------|--------|---------|-------|--------|-------|
+# Run with FPU                    | ON     |  RUN   |  SHD    |  RUN  |  RUN   |  SHD  | Run mode with FPU but without trace or debug
+# Run with FPU, MTB               | ON     |  RUN   |  SHD    |  RUN  |  RUN   |  RUN  |
+# --------------------------------|--------|--------|---------|-------|--------|-------|
+# Run with DEBUG                  | ON     |  RUN   |  RUN    |  SHD  |  RUN   |  SHD  | Run mode with debug and ETM
+# Run with DEBUG MTB              | ON     |  RUN   |  RUN    |  SHD  |  RUN   |  RUN  |
+# --------------------------------|--------|--------|---------|-------|--------|-------|
+# Run with DEBUG FPU              | ON     |  RUN   |  RUN    |  RUN  |  RUN   |  SHD  | Run mode with FPU and with debug and ETM
+# Run with DEBUG FPU MTB          | ON     |  RUN   |  RUN    |  RUN  |  RUN   |  RUN  |
+# --------------------------------|--------|--------|---------|-------|--------|-------|
+# Off                             | ON     |  SHD   |  SHD    |  SHD  |  SHD   |  SHD  | SW supported power down
+# Off with MTB and RAMS           | ON     |  SHD   |  SHD    |  SHD  |  RUN   |  RUN  | MTB SRAM access when processor shutdown
+# Off with RAMS                   | ON     |  SHD   |  SHD    |  SHD  |  RUN   |  SHD  | Dormant mode
+# SHD                             | OFF    |  SHD   |  SHD    |  SHD  |  SHD   |  SHD  | Shutdown mode
+# -------------------------------------------------------------------------------------
+
+add_power_state PDSTAR.primary \
+  -state ON  {-simstate NORMAL}
+
+
+
+
+
+
+
+
+
+add_power_state PDSTAR \
+  -state RUN                     {-logic_expr {PDSTAR.primary == ON  && PDCORE == RUN && PDDEBUG ==  SHD && PDFPU == SHD && PDRAMS == RUN}} \
+  -state RUN_FPU                 {-logic_expr {PDSTAR.primary == ON  && PDCORE == RUN && PDDEBUG ==  SHD && PDFPU == RUN && PDRAMS == RUN}} \
+  -state RUN_DEBUG               {-logic_expr {PDSTAR.primary == ON  && PDCORE == RUN && PDDEBUG ==  RUN && PDFPU == SHD && PDRAMS == RUN}} \
+  -state RUN_DEBUG_FPU           {-logic_expr {PDSTAR.primary == ON  && PDCORE == RUN && PDDEBUG ==  RUN && PDFPU == RUN && PDRAMS == RUN}} \
+  -state OFF                     {-logic_expr {PDSTAR.primary == ON  && PDCORE == SHD && PDDEBUG ==  SHD && PDFPU == SHD && PDRAMS == SHD}} \
+  -state OFF_RAMS                {-logic_expr {PDSTAR.primary == ON  && PDCORE == SHD && PDDEBUG ==  SHD && PDFPU == SHD && PDRAMS == RUN}}
+
+
+
+
+
+

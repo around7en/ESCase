@@ -1,0 +1,113 @@
+#GPIO
+set pad_list "
+    IISMCK               $SS_DCDC_GEN_BOTTOM
+    IISDO                $SS_DCDC_GEN_BOTTOM
+    IISLRCLK             $SS_DCDC_GEN_BOTTOM
+    IISCLK               $SS_DCDC_GEN_BOTTOM
+    IISDI                $SS_DCDC_GEN_BOTTOM
+    SIM1_CLK             $SS_VDD_SIM1_RIGHT
+    SIM1_IO              $SS_VDD_SIM1_RIGHT
+    SIM1_RST             $SS_VDD_SIM1_RIGHT
+    SIM0_IO              $SS_VDD_SIM0_RIGHT
+    SIM0_RST             $SS_VDD_SIM0_RIGHT
+    SIM0_CLK             $SS_VDD_SIM0_RIGHT
+    SF0_IO2              $SS_DCDC_GEN_RIGHT
+    SF0_IO1              $SS_DCDC_GEN_RIGHT
+    SF0_CSN              $SS_DCDC_GEN_RIGHT
+    SF0_IO3              $SS_DCDC_GEN_RIGHT
+    SF0_SCK              $SS_DCDC_GEN_RIGHT
+    SF0_IO0              $SS_DCDC_GEN_RIGHT
+    SF0_SWAP             $SS_DCDC_GEN_RIGHT
+    CAM_SPI_CLK          $SS_DCDC_GEN_RIGHT
+    CAM_SPI_D2           $SS_DCDC_GEN_RIGHT
+    CAM_SPI_D0           $SS_DCDC_GEN_RIGHT
+    CAM_PWD              $SS_DCDC_GEN_RIGHT
+    CAM_MCLK             $SS_DCDC_GEN_RIGHT
+    CAM_RESET            $SS_DCDC_GEN_RIGHT
+    SWCLK                $SS_DCDC_GEN_RIGHT
+    CAM_SPI_D3           $SS_DCDC_GEN_RIGHT
+    SWDIO                $SS_DCDC_GEN_RIGHT
+    CAM_SPI_D1           $SS_DCDC_GEN_RIGHT
+    U2RXD                $SS_VDD_IO_RIGHT
+    U2TXD                $SS_VDD_IO_RIGHT
+    U0CTSN               $SS_VDD_IO_RIGHT
+    U0RTSN               $SS_VDD_IO_RIGHT
+    U0RXD                $SS_VDD_IO_RIGHT
+    U0TXD                $SS_VDD_IO_RIGHT
+    KEYIN1               $SS_VDD_SD_TOP
+    SPI2_CLK             $SS_VDD_SD_TOP
+    KEYOUT1              $SS_VDD_SD_TOP
+    SPI2_CSN             $SS_VDD_SD_TOP
+    SPI2_MISO            $SS_VDD_SD_TOP
+    SPI2_MOSI            $SS_VDD_SD_TOP
+    RESET0N              $SS_DCDC_GEN_TOP
+    DM                   $SS_DCDC_GEN_TOP
+    DQ0                  $SS_DCDC_GEN_TOP
+    DQ1                  $SS_DCDC_GEN_TOP
+    DQ2                  $SS_DCDC_GEN_TOP
+    DQ3                  $SS_DCDC_GEN_TOP
+    CE                   $SS_DCDC_GEN_TOP
+    CLKB                 $SS_DCDC_GEN_TOP
+    CLK                  $SS_DCDC_GEN_TOP
+    DQ4                  $SS_DCDC_GEN_TOP
+    DQ5                  $SS_DCDC_GEN_TOP
+    DQ6                  $SS_DCDC_GEN_TOP
+    DQ7                  $SS_DCDC_GEN_TOP
+    DQS                  $SS_DCDC_GEN_TOP
+    RESET1N              $SS_DCDC_GEN_TOP
+    IIC0_SDA             $SS_DCDC_GEN_TOP
+    IIC0_SCK             $SS_DCDC_GEN_TOP
+    IIC2_SDA             $SS_DCDC_GEN_TOP
+    IIC1_SDA             $SS_DCDC_GEN_TOP
+    IIC2_SCK             $SS_DCDC_GEN_TOP
+    IIC1_SCK             $SS_DCDC_GEN_TOP
+    U1TXD                $SS_DCDC_GEN_TOP
+    U1CTSN               $SS_DCDC_GEN_TOP
+    U1RXD                $SS_DCDC_GEN_TOP
+    U1RTSN               $SS_DCDC_GEN_TOP
+    CLK_REQ              $SS_DCDC_GEN_TOP
+    AUXCLK0              $SS_DCDC_GEN_TOP
+    KEYIN0               $SS_DCDC_GEN_TOP
+    KEYOUT0              $SS_DCDC_GEN_TOP
+    EXTINT4              $SS_DCDC_GEN_TOP
+    EXTINT3              $SS_DCDC_GEN_TOP
+    EXTINT2              $SS_DCDC_GEN_TOP
+    EXTINT1              $SS_DCDC_GEN_TOP
+    EXTINT0              $SS_DCDC_GEN_TOP
+    FEIO7                $SS_DCDC_GEN_TOP
+    FEIO6                $SS_DCDC_GEN_TOP
+    FEIO5                $SS_DCDC_GEN_TOP
+    FEIO4                $SS_DCDC_GEN_TOP
+    FEIO3                $SS_DCDC_GEN_TOP
+    FEIO1                $SS_DCDC_GEN_TOP
+    FEIO2                $SS_DCDC_GEN_TOP
+    FEIO0                $SS_DCDC_GEN_TOP
+"
+foreach {pad_i ss_i} $pad_list {
+    #port_attribute
+    set_port_attributes -receiver_supply $ss_i              -driver_supply $ss_i              -ports $pad_i
+
+    #io power
+    connect_supply_net $ss_power_map($ss_i,vdd)          -ports ${IO_TOP_HIER}/u_io_group_digital_inst_wrap/u_${pad_i}/VDDIO
+    connect_supply_net $ss_power_map($ss_i,vss)          -ports ${IO_TOP_HIER}/u_io_group_digital_inst_wrap/u_${pad_i}/VSSIO
+    connect_supply_net $ss_power_map(SS_VDD_CORE,vdd)    -ports ${IO_TOP_HIER}/u_io_group_digital_inst_wrap/u_${pad_i}/VDD
+    connect_supply_net $ss_power_map(SS_VDD_CORE,vss)    -ports ${IO_TOP_HIER}/u_io_group_digital_inst_wrap/u_${pad_i}/VSS
+}
+
+#PG PIN
+set pad_list "
+    VDD_IO0              $SS_DCDC_GEN_BOTTOM
+    VDDIO_SIM1           $SS_VDD_SIM1_RIGHT
+    VDDIO_SIM0           $SS_VDD_SIM0_RIGHT
+    VDD_IO1              $SS_DCDC_GEN_RIGHT
+    VDD_IO33             $SS_VDD_IO_RIGHT
+    VDDIO_SD             $SS_VDD_SD_TOP
+    VDD_IO2              $SS_DCDC_GEN_TOP
+"
+foreach {pad_i ss_i} $pad_list {
+    #io power
+    connect_supply_net $ss_power_map($ss_i,vdd)          -ports ${IO_TOP_HIER}/u_io_group_digital_inst_wrap/u_${pad_i}/VDDIO
+    connect_supply_net $ss_power_map($ss_i,vss)          -ports ${IO_TOP_HIER}/u_io_group_digital_inst_wrap/u_${pad_i}/VSSIO
+    connect_supply_net $ss_power_map(SS_VDD_CORE,vdd)    -ports ${IO_TOP_HIER}/u_io_group_digital_inst_wrap/u_${pad_i}/VDD
+    connect_supply_net $ss_power_map(SS_VDD_CORE,vss)    -ports ${IO_TOP_HIER}/u_io_group_digital_inst_wrap/u_${pad_i}/VSS
+}

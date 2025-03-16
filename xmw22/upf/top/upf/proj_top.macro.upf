@@ -1,0 +1,97 @@
+#--------------------------------------
+#
+#--------------------------------------
+connect_supply_net VDD_CORE -ports u_digital_top/u_efuse_macro/VDD
+connect_supply_net VDD_VQPS -ports u_digital_top/u_efuse_macro/VQPS
+connect_supply_net VSS_VQPS -ports u_digital_top/u_efuse_macro/VSS
+
+#--------------------------------------
+#sram
+#--------------------------------------
+#
+connect_supply_net VDD_CORE -ports u_digital_top/u_sysram_top/u_sys_spram_bank0/u_topsys_sysram_typea/u_topsys_sysram_typea_sysram_32768x32_wrap_0/u_T22ARA1UP8192X32K2M16BSAP_0/VDDCE
+connect_supply_net VDD_CORE -ports u_digital_top/u_sysram_top/u_sys_spram_bank0/u_topsys_sysram_typea/u_topsys_sysram_typea_sysram_32768x32_wrap_0/u_T22ARA1UP8192X32K2M16BSAP_1/VDDCE
+connect_supply_net VDD_CORE -ports u_digital_top/u_sysram_top/u_sys_spram_bank0/u_topsys_sysram_typea/u_topsys_sysram_typea_sysram_32768x32_wrap_0/u_T22ARA1UP8192X32K2M16BSAP_2/VDDCE
+connect_supply_net VDD_CORE -ports u_digital_top/u_sysram_top/u_sys_spram_bank0/u_topsys_sysram_typea/u_topsys_sysram_typea_sysram_32768x32_wrap_0/u_T22ARA1UP8192X32K2M16BSAP_3/VDDCE
+connect_supply_net VDD_CORE -ports u_digital_top/u_sysram_top/u_sys_spram_bank1/u_topsys_sysram_typea/u_topsys_sysram_typea_sysram_32768x32_wrap_0/u_T22ARA1UP8192X32K2M16BSAP_0/VDDCE
+connect_supply_net VDD_CORE -ports u_digital_top/u_sysram_top/u_sys_spram_bank1/u_topsys_sysram_typea/u_topsys_sysram_typea_sysram_32768x32_wrap_0/u_T22ARA1UP8192X32K2M16BSAP_1/VDDCE
+connect_supply_net VDD_CORE -ports u_digital_top/u_sysram_top/u_sys_spram_bank1/u_topsys_sysram_typea/u_topsys_sysram_typea_sysram_32768x32_wrap_0/u_T22ARA1UP8192X32K2M16BSAP_2/VDDCE
+connect_supply_net VDD_CORE -ports u_digital_top/u_sysram_top/u_sys_spram_bank1/u_topsys_sysram_typea/u_topsys_sysram_typea_sysram_32768x32_wrap_0/u_T22ARA1UP8192X32K2M16BSAP_3/VDDCE
+connect_supply_net VDD_CORE -ports u_digital_top/u_sysram_top/u_sys_spram_bank1/u_topsys_sysram_typeb/u_topsys_sysram_typeb_sysram_2048x32_wrap_0/u_T22ARA1UP2048X32K2M4BHAP_0/VDDCE
+
+connect_supply_net VDD_CORE -ports u_digital_top/u_sysram_top/u_sys_spram_bank0/u_topsys_sysram_typea/u_topsys_sysram_typea_sysram_32768x32_wrap_0/u_T22ARA1UP8192X32K2M16BSAP_0/VDDPE
+connect_supply_net VDD_CORE -ports u_digital_top/u_sysram_top/u_sys_spram_bank0/u_topsys_sysram_typea/u_topsys_sysram_typea_sysram_32768x32_wrap_0/u_T22ARA1UP8192X32K2M16BSAP_1/VDDPE
+connect_supply_net VDD_CORE -ports u_digital_top/u_sysram_top/u_sys_spram_bank0/u_topsys_sysram_typea/u_topsys_sysram_typea_sysram_32768x32_wrap_0/u_T22ARA1UP8192X32K2M16BSAP_2/VDDPE
+connect_supply_net VDD_CORE -ports u_digital_top/u_sysram_top/u_sys_spram_bank0/u_topsys_sysram_typea/u_topsys_sysram_typea_sysram_32768x32_wrap_0/u_T22ARA1UP8192X32K2M16BSAP_3/VDDPE
+connect_supply_net VDD_CORE -ports u_digital_top/u_sysram_top/u_sys_spram_bank1/u_topsys_sysram_typea/u_topsys_sysram_typea_sysram_32768x32_wrap_0/u_T22ARA1UP8192X32K2M16BSAP_0/VDDPE
+connect_supply_net VDD_CORE -ports u_digital_top/u_sysram_top/u_sys_spram_bank1/u_topsys_sysram_typea/u_topsys_sysram_typea_sysram_32768x32_wrap_0/u_T22ARA1UP8192X32K2M16BSAP_1/VDDPE
+connect_supply_net VDD_CORE -ports u_digital_top/u_sysram_top/u_sys_spram_bank1/u_topsys_sysram_typea/u_topsys_sysram_typea_sysram_32768x32_wrap_0/u_T22ARA1UP8192X32K2M16BSAP_2/VDDPE
+connect_supply_net VDD_CORE -ports u_digital_top/u_sysram_top/u_sys_spram_bank1/u_topsys_sysram_typea/u_topsys_sysram_typea_sysram_32768x32_wrap_0/u_T22ARA1UP8192X32K2M16BSAP_3/VDDPE
+connect_supply_net VDD_CORE -ports u_digital_top/u_sysram_top/u_sys_spram_bank1/u_topsys_sysram_typeb/u_topsys_sysram_typeb_sysram_2048x32_wrap_0/u_T22ARA1UP2048X32K2M4BHAP_0/VDDPE
+
+connect_supply_net VSS_CORE -ports u_digital_top/u_sysram_top/u_sys_spram_bank0/u_topsys_sysram_typea/u_topsys_sysram_typea_sysram_32768x32_wrap_0/u_T22ARA1UP8192X32K2M16BSAP_0/VSSE
+connect_supply_net VSS_CORE -ports u_digital_top/u_sysram_top/u_sys_spram_bank0/u_topsys_sysram_typea/u_topsys_sysram_typea_sysram_32768x32_wrap_0/u_T22ARA1UP8192X32K2M16BSAP_1/VSSE
+connect_supply_net VSS_CORE -ports u_digital_top/u_sysram_top/u_sys_spram_bank0/u_topsys_sysram_typea/u_topsys_sysram_typea_sysram_32768x32_wrap_0/u_T22ARA1UP8192X32K2M16BSAP_2/VSSE
+connect_supply_net VSS_CORE -ports u_digital_top/u_sysram_top/u_sys_spram_bank0/u_topsys_sysram_typea/u_topsys_sysram_typea_sysram_32768x32_wrap_0/u_T22ARA1UP8192X32K2M16BSAP_3/VSSE
+connect_supply_net VSS_CORE -ports u_digital_top/u_sysram_top/u_sys_spram_bank1/u_topsys_sysram_typea/u_topsys_sysram_typea_sysram_32768x32_wrap_0/u_T22ARA1UP8192X32K2M16BSAP_0/VSSE
+connect_supply_net VSS_CORE -ports u_digital_top/u_sysram_top/u_sys_spram_bank1/u_topsys_sysram_typea/u_topsys_sysram_typea_sysram_32768x32_wrap_0/u_T22ARA1UP8192X32K2M16BSAP_1/VSSE
+connect_supply_net VSS_CORE -ports u_digital_top/u_sysram_top/u_sys_spram_bank1/u_topsys_sysram_typea/u_topsys_sysram_typea_sysram_32768x32_wrap_0/u_T22ARA1UP8192X32K2M16BSAP_2/VSSE
+connect_supply_net VSS_CORE -ports u_digital_top/u_sysram_top/u_sys_spram_bank1/u_topsys_sysram_typea/u_topsys_sysram_typea_sysram_32768x32_wrap_0/u_T22ARA1UP8192X32K2M16BSAP_3/VSSE
+connect_supply_net VSS_CORE -ports u_digital_top/u_sysram_top/u_sys_spram_bank1/u_topsys_sysram_typeb/u_topsys_sysram_typeb_sysram_2048x32_wrap_0/u_T22ARA1UP2048X32K2M4BHAP_0/VSSE
+
+#DC will report multi driver if more than one
+connect_supply_net VSS_CORE_TOP_MEM_SW -ports u_digital_top/u_sysram_top/u_sys_spram_bank0/u_topsys_sysram_typea/u_topsys_sysram_typea_sysram_32768x32_wrap_0/u_T22ARA1UP8192X32K2M16BSAP_0/VSS
+#connect_supply_net VSS_CORE_TOP_MEM_SW -ports u_digital_top/u_sysram_top/u_sys_spram_bank0/u_topsys_sysram_typea/u_topsys_sysram_typea_sysram_32768x32_wrap_0/u_T22ARA1UP8192X32K2M16BSAP_1/VSS
+#connect_supply_net VSS_CORE_TOP_MEM_SW -ports u_digital_top/u_sysram_top/u_sys_spram_bank0/u_topsys_sysram_typea/u_topsys_sysram_typea_sysram_32768x32_wrap_0/u_T22ARA1UP8192X32K2M16BSAP_2/VSS
+#connect_supply_net VSS_CORE_TOP_MEM_SW -ports u_digital_top/u_sysram_top/u_sys_spram_bank0/u_topsys_sysram_typea/u_topsys_sysram_typea_sysram_32768x32_wrap_0/u_T22ARA1UP8192X32K2M16BSAP_3/VSS
+#connect_supply_net VSS_CORE_TOP_MEM_SW -ports u_digital_top/u_sysram_top/u_sys_spram_bank1/u_topsys_sysram_typea/u_topsys_sysram_typea_sysram_32768x32_wrap_0/u_T22ARA1UP8192X32K2M16BSAP_0/VSS
+#connect_supply_net VSS_CORE_TOP_MEM_SW -ports u_digital_top/u_sysram_top/u_sys_spram_bank1/u_topsys_sysram_typea/u_topsys_sysram_typea_sysram_32768x32_wrap_0/u_T22ARA1UP8192X32K2M16BSAP_1/VSS
+#connect_supply_net VSS_CORE_TOP_MEM_SW -ports u_digital_top/u_sysram_top/u_sys_spram_bank1/u_topsys_sysram_typea/u_topsys_sysram_typea_sysram_32768x32_wrap_0/u_T22ARA1UP8192X32K2M16BSAP_2/VSS
+#connect_supply_net VSS_CORE_TOP_MEM_SW -ports u_digital_top/u_sysram_top/u_sys_spram_bank1/u_topsys_sysram_typea/u_topsys_sysram_typea_sysram_32768x32_wrap_0/u_T22ARA1UP8192X32K2M16BSAP_3/VSS
+#connect_supply_net VSS_CORE_TOP_MEM_SW -ports u_digital_top/u_sysram_top/u_sys_spram_bank1/u_topsys_sysram_typeb/u_topsys_sysram_typeb_sysram_2048x32_wrap_0/u_T22ARA1UP2048X32K2M4BHAP_0/VSS
+
+#--------------------------------------
+#analog
+#--------------------------------------
+
+#--------------------------------------
+#rftop
+#--------------------------------------
+connect_supply_net $ss_power_map(SS_VDD_CORE,vdd)            -ports u_rftop/DIG_DVDD
+connect_supply_net $ss_power_map(SS_VDD_CORE,vss)            -ports u_rftop/DIG_DVSS
+connect_supply_net $ss_power_map(SS_VDD_RF12,vdd)            -ports u_rftop/VDD_1V2
+connect_supply_net $ss_power_map(SS_VDD_RF12,vss)            -ports u_rftop/VSS_1V2
+connect_supply_net $ss_power_map(SS_VDD_RF18_BOTTOM,vdd)     -ports u_rftop/VDD_1V8
+connect_supply_net $ss_power_map(SS_VDD_RF18_BOTTOM,vss)     -ports u_rftop/VSS_1V8
+connect_supply_net $ss_power_map(SS_VDD_DCXO,vdd)            -ports u_rftop/VDDXO
+#connect_supply_net $ss_power_map(SS_VDD_DCXO,vss)            -ports u_rftop/VSSXO
+connect_supply_net $ss_power_map(SS_VDD_AON,vdd)             -ports u_rftop/VDD_0V8_AON
+connect_supply_net $ss_power_map(SS_VDD_AON,vss)             -ports u_rftop/VSS_0V8_AON
+
+#connect_supply_net VSS_CORE_TOP_MEM_SW -ports u_rftop/TX_HMB0_VSSANT
+#connect_supply_net VSS_CORE_TOP_MEM_SW -ports u_rftop/TX_LB_VSSANT
+#connect_supply_net VSS_CORE_TOP_MEM_SW -ports u_rftop/VDDBG
+#connect_supply_net VSS_CORE_TOP_MEM_SW -ports u_rftop/VSSADC
+#connect_supply_net VSS_CORE_TOP_MEM_SW -ports u_rftop/VSSAMS
+#connect_supply_net VSS_CORE_TOP_MEM_SW -ports u_rftop/VSSBG
+#connect_supply_net VSS_CORE_TOP_MEM_SW -ports u_rftop/VSSCPLL
+#connect_supply_net VSS_CORE_TOP_MEM_SW -ports u_rftop/VSSIO1
+#connect_supply_net VSS_CORE_TOP_MEM_SW -ports u_rftop/VSSIO2
+#connect_supply_net VSS_CORE_TOP_MEM_SW -ports u_rftop/VSSPPA
+#connect_supply_net VSS_CORE_TOP_MEM_SW -ports u_rftop/VSSRX
+#connect_supply_net VSS_CORE_TOP_MEM_SW -ports u_rftop/VSSRXVCO
+#connect_supply_net VSS_CORE_TOP_MEM_SW -ports u_rftop/VSSSUB
+#connect_supply_net VSS_CORE_TOP_MEM_SW -ports u_rftop/VSSTX
+#connect_supply_net VSS_CORE_TOP_MEM_SW -ports u_rftop/VSSTXDAC
+#connect_supply_net VSS_CORE_TOP_MEM_SW -ports u_rftop/VSSTXDAC2
+#connect_supply_net VSS_CORE_TOP_MEM_SW -ports u_rftop/VSSTXVCO
+#connect_supply_net VSS_CORE_TOP_MEM_SW -ports u_rftop/VSS_HB0
+#connect_supply_net VSS_CORE_TOP_MEM_SW -ports u_rftop/VSS_HB1
+#connect_supply_net VSS_CORE_TOP_MEM_SW -ports u_rftop/VSS_HMB0
+#connect_supply_net VSS_CORE_TOP_MEM_SW -ports u_rftop/VSS_HMB1
+#connect_supply_net VSS_CORE_TOP_MEM_SW -ports u_rftop/VSS_HMB2
+#connect_supply_net VSS_CORE_TOP_MEM_SW -ports u_rftop/VSS_LB0
+#connect_supply_net VSS_CORE_TOP_MEM_SW -ports u_rftop/VSS_LB1
+#connect_supply_net VSS_CORE_TOP_MEM_SW -ports u_rftop/VSS_MLB0
+#connect_supply_net VSS_CORE_TOP_MEM_SW -ports u_rftop/VSS_MLB1
+#connect_supply_net VSS_CORE_TOP_MEM_SW -ports u_rftop/VSS_MLB2

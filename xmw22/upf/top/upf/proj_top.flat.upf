@@ -1,0 +1,10 @@
+#-------------------------------------------------------------------------------
+# Unified Power Format (IEEE Std 1801-2013)
+#-------------------------------------------------------------------------------
+upf_version 2.1
+
+set PROJ_DIR $env(PROJ_DIR)
+set IS_CHIP 1
+set IS_FLAT 1
+source $PROJ_DIR/de/top/upf/proj_top.upf
+

@@ -1,0 +1,7 @@
+/////////////////////////////////////////////////////////
+clk_name:dbg_sys_clk_dbg_uart
+inv_hier:u_digital_top/u_dbg_sys_top/u_dbg_rst_core_wrap/u_dbg_rst_core/u_clk_uart_dbg_inv/cmind_uj_ckcell
+
+/////////////////////////////////////////////////////////
+clk_name:cpu_sys_jtag_clk
+inv_hier:u_digital_top/u_dbg_sys_top/u_dbg_rst_core_wrap/u_dbg_rst_core/u_swclktck_inv/cmind_uj_ckcell

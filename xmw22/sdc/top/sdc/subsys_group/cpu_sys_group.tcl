@@ -1,0 +1,11 @@
+lappend CLOCK_GROUP(cpu_sys_clk_ap_ahb_scan_scan)  ${CPU_SYS_HIER}cpu_sys_clk_ap_ahb_scan_scan
+lappend CLOCK_GROUP(cpu_sys_clk_cp_ahb_scan_scan)  ${CPU_SYS_HIER}cpu_sys_clk_cp_ahb_scan_scan
+lappend CLOCK_GROUP(cpu_sys_clk_top_ahb_scan_scan)  ${CPU_SYS_HIER}cpu_sys_clk_top_ahb_scan_scan
+lappend CLOCK_GROUP(cpu_sys_clk_pub_ahb_scan_scan)  ${CPU_SYS_HIER}cpu_sys_clk_pub_ahb_scan_scan
+lappend CLOCK_GROUP(cpu_sys_clk_rom_scan)  ${CPU_SYS_HIER}cpu_sys_clk_rom_scan
+lappend CLOCK_GROUP(cpu_sys_clk_cpu_mtck_scan)  ${CPU_SYS_HIER}cpu_sys_clk_cpu_mtck_scan
+lappend CLOCK_GROUP(cpu_sys_clk_cpu_arm_rtc_scan)  ${CPU_SYS_HIER}cpu_sys_clk_cpu_arm_rtc_scan
+lappend CLOCK_GROUP(cpu_sys_clk_sys_ram_scan_scan)  ${CPU_SYS_HIER}cpu_sys_clk_sys_ram_scan_scan
+lappend CLOCK_GROUP(cpu_sys_clk_cpu_arm_rtc)  ${CPU_SYS_HIER}cpu_sys_clk_cpu_arm_rtc
+lappend CLOCK_GROUP(cpu_sys_clk_cpu_arm)  ${CPU_SYS_HIER}cpu_sys_clk_cpu_arm
+lappend CLOCK_GROUP(cpu_sys_clk_flash_ahb_scan_scan)  ${CPU_SYS_HIER}cpu_sys_clk_flash_ahb_scan_scan
